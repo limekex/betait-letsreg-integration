@@ -31,19 +31,19 @@
       // If you want the table to refresh automatically when toggles change,
       // you could add listeners here, e.g.:
       //
-      // document.getElementById('betait_toggle_activeonly')
-      //   ?.addEventListener('change', () => {
-      //     currentPage = 1;
-      //     $('#betait-letsreg-events-table-body').empty();
-      //     loadEvents(currentPage);
-      //   });
+      document.getElementById('betait_toggle_activeonly')
+      ?.addEventListener('change', () => {
+      currentPage = 1;
+      $('#betait-letsreg-events-table-body').empty();
+      loadEvents(currentPage);
+      });
       //
-      // document.getElementById('betait_toggle_searchableonly')
-      //   ?.addEventListener('change', () => {
-      //     currentPage = 1;
-      //     $('#betait-letsreg-events-table-body').empty();
-      //     loadEvents(currentPage);
-      //   });
+      document.getElementById('betait_toggle_searchableonly')
+      ?.addEventListener('change', () => {
+      currentPage = 1;
+      $('#betait-letsreg-events-table-body').empty();
+      loadEvents(currentPage);
+      });
   
     });
   
@@ -122,28 +122,24 @@
                 ? event.location.name
                 : 'N/A';
   
-              const row = `
+                const row = `
                 <tr>
                   <td>
-                    <a href="${event.eventUrl}" target="_blank" title="Public URL">
+                    <a href="${event.eventUrl}" target="_blank" title="Offentlig URL">
                       <span class="dashicons dashicons-external"></span>
                     </a>
-                    <button
-                      class="button button-secondary add-to-wp"
-                      data-event-id="${event.id}"
-                      title="Add to WP"
-                    >
+                    <button class="button button-secondary add-to-wp" data-event-id="${event.id}" title="${BetaitLetsReg.add_wp_label}">
                       <span class="dashicons dashicons-plus"></span>
                     </button>
                   </td>
-                  <td>${event.name}</td>
-                  <td>${venue}</td>
-                  <td>${event.registeredParticipants}</td>
-                  <td>${event.maxAllowedRegistrations}</td>
-                  <td>${event.hasWaitinglist ? 'Yes' : 'No'}</td>
-                  <td>${startTime}</td>
-                  <td>${endTime}</td>
-                  <td>${regDeadline}</td>
+                  <td colspan="2" class="beta-letsreg-table-eventname">${event.name}</td>
+                  <td class="beta-letsreg-table-venue">${venue}</td>
+                  <td class="beta-letsreg-table-registred">${event.registeredParticipants}</td>
+                  <td class="beta-letsreg-table-allowedregistred">${event.maxAllowedRegistrations}</td>
+                  <td class="beta-letsreg-table-waitinglist">${event.hasWaitinglist ? 'Ja' : 'Nei'}</td>
+                  <td class="beta-letsreg-table-starttime">${startTime}</td>
+                  <td class="beta-letsreg-table-endtime">${endTime}</td>
+                  <td class="beta-letsreg-table-deadline">${regDeadline}</td>
                 </tr>
               `;
               tbody.append(row);
