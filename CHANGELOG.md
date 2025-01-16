@@ -8,3 +8,4 @@ Event management and addition to WordPress.
 Search functionality.
 Debug logging for troubleshooting.
 Security enhancements with nonces and capability checks.
+x
