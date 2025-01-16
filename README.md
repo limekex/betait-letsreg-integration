@@ -1,10 +1,9 @@
-# Betait LetsReg Events Manager
+# Betait LetsReg Events Integration
 
-![Plugin Banner](https://example.com/banner-image.png)
 
 ## Overview
 
-**Betait LetsReg Events Manager** is a powerful WordPress plugin designed to seamlessly integrate with the LetsReg API, allowing you to fetch, display, and manage events directly from your WordPress dashboard. Whether you're organizing workshops, seminars, or any other type of event, this plugin provides a user-friendly interface to keep your event listings up-to-date and interactive.
+**Betait LetsReg Events Integration** aim to become a powerful WordPress plugin designed to seamlessly integrate with the LetsReg API, allowing you to fetch, display, and manage events directly from your WordPress dashboard. Whether you're organizing workshops, seminars, or any other type of event, this plugin provides a user-friendly interface to keep your event listings up-to-date and interactive.
 
 > **Note:** This project is currently under development. Contributions are welcome! Please see the [Contributing](#contributing) section below for more details.
 
