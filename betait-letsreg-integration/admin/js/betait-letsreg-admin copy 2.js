@@ -44,22 +44,22 @@
 
     function loadEvents(page) {
         logDebug('Initiating AJAX request to fetch events for page ' + page);
-    
+
+        // Beregn offset basert på page og limit
+        const offset = (page - 1) * limit;
+
         $.ajax({
             url: BetaitLetsReg.ajax_url,
             type: 'POST',
             data: {
                 action: 'betait_letsreg_fetch_events',
                 nonce: BetaitLetsReg.nonce,
-                page: page, // Keep page for PHP calculation of offset
+                page: page, // Behold page for PHP beregning av offset
                 sort_field: currentSortColumn,
                 sort_direction: currentSortDirection,
-                // Optional filters
-                activeonly: true, // Set to true if you want only active events
-                searchableonly: false, // Set to true if you want only searchable events
             },
             beforeSend: function() {
-                $('#betait-letsreg-load-more').text('Loading...');
+                $('#betait-letsreg-load-more').text('Laster...');
                 logDebug('AJAX request sent for page ' + page);
             },
             success: function(response) {
@@ -67,65 +67,65 @@
                 if (response.success) {
                     const events = response.data.events;
                     const tbody = $('#betait-letsreg-events-table-body');
-    
+
                     if (events.length === 0 && page === 1) {
-                        tbody.append('<tr><td colspan="9">No events found.</td></tr>');
+                        tbody.append('<tr><td colspan="9">Ingen aktive arrangementer funnet.</td></tr>');
                         $('#betait-letsreg-load-more').hide();
-                        logDebug('No events found.');
+                        logDebug('No active events found.');
                         return;
                     }
-    
+
                     events.forEach(function(event) {
-                        const startTime = event.startDate ? new Date(event.startDate).toLocaleString() : 'N/A';
-                        const endTime = event.endDate ? new Date(event.endDate).toLocaleString() : 'N/A';
-                        const regDeadline = event.registrationStartDate ? new Date(event.registrationStartDate).toLocaleString() : 'N/A';
-    
-                        const venue = event.location && event.location.name ? event.location.name : 'N/A';
-    
+                        const startTime = event.startDate ? new Date(event.startDate).toLocaleString() : 'Ingen';
+                        const endTime = event.endDate ? new Date(event.endDate).toLocaleString() : 'Ingen';
+                        const regDeadline = event.registrationStartDate ? new Date(event.registrationStartDate).toLocaleString() : 'Ingen';
+
+                        const venue = event.location && event.location.name ? event.location.name : 'Ingen';
+
                         const row = `
-                            <tr>
-                                <td>
-                                    <a href="${event.eventUrl}" target="_blank" title="Public URL">
-                                        <span class="dashicons dashicons-external"></span>
-                                    </a>
-                                    <button class="button button-secondary add-to-wp" data-event-id="${event.id}" title="Add to WP">
-                                        <span class="dashicons dashicons-plus"></span>
-                                    </button>
-                                </td>
-                                <td>${event.name}</td>
-                                <td>${venue}</td>
-                                <td>${event.registeredParticipants}</td>
-                                <td>${event.maxAllowedRegistrations}</td>
-                                <td>${event.hasWaitinglist ? 'Yes' : 'No'}</td>
-                                <td>${startTime}</td>
-                                <td>${endTime}</td>
-                                <td>${regDeadline}</td>
-                            </tr>
-                        `;
+							<tr>
+								<td>
+									<a href="${event.eventUrl}" target="_blank" title="Offentlig URL">
+										<span class="dashicons dashicons-external"></span>
+									</a>
+									<button class="button button-secondary add-to-wp" data-event-id="${event.id}" title="${BetaitLetsReg.add_wp_label}">
+										<span class="dashicons dashicons-plus"></span>
+									</button>
+								</td>
+								<td colspan="2" class="beta-letsreg-table-eventname">${event.name}</td>
+								<td class="beta-letsreg-table-venue">${venue}</td>
+								<td class="beta-letsreg-table-registred">${event.registeredParticipants}</td>
+								<td class="beta-letsreg-table-allowedregistred">${event.maxAllowedRegistrations}</td>
+								<td class="beta-letsreg-table-waitinglist">${event.hasWaitinglist ? 'Ja' : 'Nei'}</td>
+								<td class="beta-letsreg-table-starttime">${startTime}</td>
+								<td class="beta-letsreg-table-endtime">${endTime}</td>
+								<td class="beta-letsreg-table-deadline">${regDeadline}</td>
+							</tr>
+						`;
                         tbody.append(row);
                         logDebug('Appended event to table: ', event);
                     });
-    
-                    // Update page number and total pages
+
+                    // Oppdater side-nummer og total sider
                     currentPage++;
-                    // If API returns total number of events, calculate totalPages
-                    // If not, assume that if the number of fetched events equals limit, there might be more
+                    // Hvis API-et returnerer total antall arrangementer, kan vi beregne totalPages
+                    // Hvis ikke, kan vi anta at hvis antall hentede arrangementer er lik limit, så er det muligens flere
                     if (events.length === limit) {
-                        totalPages = currentPage + 1; // Simple approach
+                        totalPages = currentPage + 1; // Dette er en enkel tilnærming
                     } else {
                         totalPages = currentPage;
                     }
                     logDebug('Updated currentPage to ' + currentPage + ' and totalPages to ' + totalPages);
-    
-                    // Check if there are more pages to load
+
+                    // Sjekk om det er flere sider
                     if (events.length < limit) {
                         $('#betait-letsreg-load-more').hide();
                         logDebug('No more pages to load. Hiding load more button.');
                     } else {
-                        $('#betait-letsreg-load-more').text('Load More');
-                        logDebug('Load more button updated to "Load More".');
+                        $('#betait-letsreg-load-more').text('Last mer');
+                        logDebug('Load more button updated to "Last mer".');
                     }
-    
+
                     // Apply current sort if any
                     if (currentSortColumn) {
                         sortTable(currentSortColumn, currentSortDirection);
@@ -133,15 +133,24 @@
                 } else {
                     alert(response.data.message);
                     logDebug('AJAX request returned error: ' + response.data.message);
-                    $('#betait-letsreg-load-more').text('Load More');
+                    $('#betait-letsreg-load-more').text('Last mer');
                 }
             },
             error: function(xhr, status, error) {
-                alert('An error occurred: ' + error);
+                alert('En feil oppstod: ' + error);
                 logDebug('AJAX request failed:', { xhr: xhr, status: status, error: error });
-                $('#betait-letsreg-load-more').text('Load More');
+                $('#betait-letsreg-load-more').text('Last mer');
             }
         });
+    }
+
+    // Last inn første side med arrangementer
+    loadEvents(currentPage);
+
+    // Håndter klikk på "Last mer" knappen
+    $('#betait-letsreg-load-more').on('click', function() {
+        loadEvents(currentPage);
+    });
 
     // Håndtere "Legg til i WordPress" knapper
     $(document).on('click', '.add-to-wp', function() {

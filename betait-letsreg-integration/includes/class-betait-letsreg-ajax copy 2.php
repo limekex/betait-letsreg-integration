@@ -42,70 +42,52 @@ class Betait_LetsReg_Ajax {
     public function fetch_events_ajax_handler() {
         $this->log_debug( 'Fetch Events AJAX handler initiated.' );
     
-        // Check nonce for security
+        // Sjekk nonce for sikkerhet
         if ( ! check_ajax_referer( 'betait_letsreg_nonce', 'nonce', false ) ) {
             $this->log_debug( 'Nonce verification failed.' );
-            wp_send_json_error( array( 'message' => __( 'Invalid security nonce.', 'betait-letsreg' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Ugyldig sikkerhetskode.', 'betait-letsreg' ) ) );
         }
         $this->log_debug( 'Nonce verification passed.' );
     
-        // Check user capabilities
+        // Sjekk brukerrettigheter
         if ( ! current_user_can( 'manage_options' ) ) {
             $this->log_debug( 'User lacks manage_options capability.' );
-            wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'betait-letsreg' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Du har ikke tilgang til denne handlingen.', 'betait-letsreg' ) ) );
         }
         $this->log_debug( 'User has manage_options capability.' );
     
-        // Get organizer ID from options
+        // Hent organizerId fra options
         $organizer_id = get_option( 'betait_letsreg_primary_org', 0 );
         if ( ! $organizer_id ) {
-            $this->log_debug( 'Organizer ID not set.' );
-            wp_send_json_error( array( 'message' => __( 'Organizer ID not set.', 'betait-letsreg' ) ) );
+            $this->log_debug( 'Organizer ID ikke satt.' );
+            wp_send_json_error( array( 'message' => __( 'Organizer ID ikke satt.', 'betait-letsreg' ) ) );
         }
         $this->log_debug( 'Organizer ID: ' . $organizer_id );
     
-        // Get pagination parameters from AJAX request
+        // Hent offset og limit fra AJAX request
         $current_page = isset( $_POST['page'] ) ? intval( $_POST['page'] ) : 1;
-        $limit        = 10; // Number of results per page
+        $limit        = 10; // Antall resultater per side
         $offset       = ($current_page - 1) * $limit;
     
         $this->log_debug( 'Fetching page ' . $current_page . ' with limit ' . $limit . ' and offset ' . $offset . '.' );
     
-        // Get optional filter parameters from AJAX request
-        $active_only      = isset( $_POST['activeonly'] ) ? filter_var( $_POST['activeonly'], FILTER_VALIDATE_BOOLEAN ) : false;
-        $searchable_only  = isset( $_POST['searchableonly'] ) ? filter_var( $_POST['searchableonly'], FILTER_VALIDATE_BOOLEAN ) : false;
-    
-        $this->log_debug( 'Active Only: ' . ( $active_only ? 'true' : 'false' ) );
-        $this->log_debug( 'Searchable Only: ' . ( $searchable_only ? 'true' : 'false' ) );
-    
-        // Build the endpoint URL with offset, limit, and optional filters
+        // Bygg endpoint-URL med offset og limit
         $base_url     = get_option( 'betait_letsreg_base_url', 'https://integrate.deltager.no' );
         $access_token = get_option( 'betait_letsreg_access_token', '' );
         $endpoint_url = trailingslashit( $base_url ) . 'organizers/' . $organizer_id . '/events';
-    
-        // Prepare query arguments
-        $query_args = array(
-            'offset'                 => $offset,
-            'limit'                  => $limit,
-            'IncludeMunicipalities'  => 'true',
-            'IncludeAreas'           => 'true',
-        );
-    
-        // Conditionally add 'activeonly' and 'searchableonly' if they are true
-        if ( $active_only ) {
-            $query_args['activeonly'] = 'true';
-        }
-    
-        if ( $searchable_only ) {
-            $query_args['searchableonly'] = 'true';
-        }
-    
-        // Build the full endpoint URL with query parameters
-        $endpoint_url = add_query_arg( $query_args, $endpoint_url );
+        $endpoint_url = add_query_arg( array(
+           /'IncludeFields' => 'true',
+            'ActiveOnly' => 'false',
+            'SearchableOnly'=> 'false',
+            'IncludeMunicipalities'=> 'true',
+            'IncludeAreas'=> 'true',
+            'offset' => $offset,
+            'limit'  => $limit,
+        ), $endpoint_url );
     
         $this->log_debug( 'API Endpoint URL: ' . $endpoint_url );
     
-        // Make the API request
+        // Gjør API-forespørsel
         $response = wp_remote_get( $endpoint_url, array(
             'headers' => array(
                 'Authorization' => 'Bearer ' . $access_token,
@@ -124,8 +106,8 @@ class Betait_LetsReg_Ajax {
         $this->log_debug( 'API response status code: ' . $status_code );
     
         if ( 200 !== $status_code ) {
-            $this->log_debug( 'API request failed with status code ' . $status_code . '.' );
-            wp_send_json_error( array( 'message' => sprintf( __( 'API request failed with status code %d.', 'betait-letsreg' ), $status_code ) ) );
+            $this->log_debug( 'API-forespørsel feilet med statuskode ' . $status_code . '.' );
+            wp_send_json_error( array( 'message' => sprintf( __( 'API-forespørsel feilet med statuskode %d.', 'betait-letsreg' ), $status_code ) ) );
         }
     
         $body = wp_remote_retrieve_body( $response );
@@ -135,72 +117,93 @@ class Betait_LetsReg_Ajax {
     
         if ( json_last_error() !== JSON_ERROR_NONE ) {
             $this->log_debug( 'JSON parse error: ' . json_last_error_msg() );
-            wp_send_json_error( array( 'message' => __( 'Could not parse JSON response.', 'betait-letsreg' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Kunne ikke parse JSON-responsen.', 'betait-letsreg' ) ) );
         }
         $this->log_debug( 'JSON parsed successfully.' );
     
-        // Log entire JSON data for debugging
+        // Log hele JSON-strømmen for feilsøking
         $this->log_debug( 'Decoded JSON data: ' . print_r( $data, true ) );
     
-        // Check if $data is an array
+        // Sjekk om $data er en array
         if ( ! is_array( $data ) ) {
-            $this->log_debug( 'API response is not an array.' );
-            wp_send_json_error( array( 'message' => __( 'Unexpected API response format.', 'betait-letsreg' ) ) );
+            $this->log_debug( 'API-responsen er ikke en array.' );
+            wp_send_json_error( array( 'message' => __( 'Uventet API-responsformat.', 'betait-letsreg' ) ) );
         }
     
-        // No date-based filtering; include all events
-        $active_events = $data;
-        $this->log_debug( 'No filtering applied. Total events received: ' . count( $active_events ) );
-    
-        // Sort events by sort_field and sort_direction
-        $sort_field = isset( $_POST['sort_field'] ) ? sanitize_text_field( $_POST['sort_field'] ) : 'startDate';
-        $sort_direction = isset( $_POST['sort_direction'] ) && in_array( strtolower( $_POST['sort_direction'] ), array( 'asc', 'desc' ) ) ? strtolower( $_POST['sort_direction'] ) : 'asc';
-    
-        $this->log_debug( 'Sort field: ' . $sort_field . ', Sort direction: ' . $sort_direction );
-    
-        usort( $active_events, function( $a, $b ) use ( $sort_field, $sort_direction ) {
-            $valueA = isset( $a[ $sort_field ] ) ? $a[ $sort_field ] : '';
-            $valueB = isset( $b[ $sort_field ] ) ? $b[ $sort_field ] : '';
-    
-            // Handle different data types
-            if ( in_array( $sort_field, array( 'startDate', 'endDate', 'registrationStartDate' ) ) ) {
-                $timeA = strtotime( $valueA );
-                $timeB = strtotime( $valueB );
-                if ( $timeA == $timeB ) return 0;
-                return ($sort_direction === 'asc') ? ($timeA < $timeB ? -1 : 1) : ($timeA > $timeB ? -1 : 1);
+        // Filtrer aktive arrangementer
+        $current_time = current_time( 'timestamp', true ); // UTC time
+        $active_events = array_filter( $data, function( $event ) use ( $current_time ) {
+            // Sjekk om arrangementet er aktivt
+            if ( ! isset( $event['active'] ) || ! $event['active'] ) {
+                $this->log_debug( 'Event ID ' . $event['id'] . ' er ikke aktivt.' );
+                return false;
             }
     
-            if ( in_array( $sort_field, array( 'registeredParticipants', 'maxAllowedRegistrations' ) ) ) {
-                $numA = intval( $valueA );
-                $numB = intval( $valueB );
-                if ( $numA == $numB ) return 0;
-                return ($sort_direction === 'asc') ? ($numA < $numB ? -1 : 1) : ($numA > $numB ? -1 : 1);
+            // Sjekk om startDate er etter nåværende tid
+            if ( ! isset( $event['startDate'] ) ) {
+                $this->log_debug( 'Event ID ' . $event['id'] . ' har ingen startDate.' );
+                return false;
+            }
+            try {
+                $start_date = new DateTime( $event['startDate'] );
+                if ( $start_date->getTimestamp() <= $current_time ) {
+                    $this->log_debug( 'Event ID ' . $event['id'] . ' startDate (' . $event['startDate'] . ') er ikke etter current_time.' );
+                    return false;
+                }
+            } catch ( Exception $e ) {
+                $this->log_debug( 'Event ID ' . $event['id'] . ' har ugyldig startDate: ' . $event['startDate'] );
+                return false;
             }
     
-            if ( $sort_field === 'hasWaitinglist' ) {
-                $valA = strtolower( $valueA ) === 'ja' ? 1 : 0;
-                $valB = strtolower( $valueB ) === 'ja' ? 1 : 0;
-                if ( $valA == $valB ) return 0;
-                return ($sort_direction === 'asc') ? ($valA < $valB ? -1 : 1) : ($valA > $valB ? -1 : 1);
+            // Sjekk om registrering er åpen
+            if ( isset( $event['registrationStartDate'] ) ) {
+                try {
+                    $registration_start = new DateTime( $event['registrationStartDate'] );
+                    if ( $registration_start->getTimestamp() > $current_time ) {
+                        $this->log_debug( 'Event ID ' . $event['id'] . ' registrationStartDate (' . $event['registrationStartDate'] . ') er i fremtiden.' );
+                        return false; // Registreringen har ikke startet ennå
+                    }
+                } catch ( Exception $e ) {
+                    $this->log_debug( 'Event ID ' . $event['id'] . ' har ugyldig registrationStartDate: ' . $event['registrationStartDate'] );
+                    return false;
+                }
+            } else {
+                $this->log_debug( 'Event ID ' . $event['id'] . ' har ingen registrationStartDate.' );
+                return false; // Ingen registreringsstartdato angitt
             }
     
-            // For string fields
-            $valA = strtolower( $valueA );
-            $valB = strtolower( $valueB );
-            if ( $valA == $valB ) return 0;
-            return ($sort_direction === 'asc') ? ( $valA < $valB ? -1 : 1 ) : ( $valA > $valB ? -1 : 1 );
+            if ( isset( $event['registrationEndDate'] ) && ! empty( $event['registrationEndDate'] ) ) {
+                try {
+                    $registration_end = new DateTime( $event['registrationEndDate'] );
+                    if ( $registration_end->getTimestamp() < $current_time ) {
+                        $this->log_debug( 'Event ID ' . $event['id'] . ' registrationEndDate (' . $event['registrationEndDate'] . ') er før current_time.' );
+                        return false; // Registreringen er stengt
+                    }
+                } catch ( Exception $e ) {
+                    $this->log_debug( 'Event ID ' . $event['id'] . ' har ugyldig registrationEndDate: ' . $event['registrationEndDate'] );
+                    return false;
+                }
+            }
+    
+            $this->log_debug( 'Event ID ' . $event['id'] . ' passerte alle filtreringer.' );
+            return true;
         });
+        $this->log_debug( 'Filtered ' . count( $active_events ) . ' active events.' );
     
-        $this->log_debug( 'Sorted active events.' );
+        // Sorter arrangementer etter start_time
+        usort( $active_events, function( $a, $b ) {
+            return strtotime( $a['startDate'] ) - strtotime( $b['startDate'] );
+        });
+        $this->log_debug( 'Sorted active events by start_time.' );
     
-        // Limit to 10 per page (even if API already handles this)
-        $active_events = array_slice( $active_events, 0, $limit );
+        // Begrens til 10 per side (selv om API allerede håndterer dette)
+        $active_events = array_slice( $active_events, 0, 10 );
         $this->log_debug( 'Sliced active events to ' . count( $active_events ) . ' events.' );
     
-        // Send data back to front-end
+        // Send data tilbake til front-end
         wp_send_json_success( array(
             'events' => $active_events,
-            // 'pagination' => array(), // API does not return pagination, so this can be removed or adjusted
+            // 'pagination' => array(), // API-et returnerer ikke pagination, så dette kan fjernes eller tilpasses
         ) );
     }
     
