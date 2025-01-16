@@ -1,99 +1,129 @@
-# WordPress Plugin Boilerplate
+# Betait LetsReg Events Manager
 
-A standardized, organized, object-oriented foundation for building high-quality WordPress Plugins.
+![Plugin Banner](https://example.com/banner-image.png)
 
-## Contents
+## Overview
 
-The WordPress Plugin Boilerplate includes the following files:
+**Betait LetsReg Events Manager** is a powerful WordPress plugin designed to seamlessly integrate with the LetsReg API, allowing you to fetch, display, and manage events directly from your WordPress dashboard. Whether you're organizing workshops, seminars, or any other type of event, this plugin provides a user-friendly interface to keep your event listings up-to-date and interactive.
 
-* `.gitignore`. Used to exclude certain files from the repository.
-* `CHANGELOG.md`. The list of changes to the core project.
-* `README.md`. The file that you’re currently reading.
-* A `plugin-name` directory that contains the source code - a fully executable WordPress plugin.
+> **Note:** This project is currently under development. Contributions are welcome! Please see the [Contributing](#contributing) section below for more details.
 
 ## Features
 
-* The Boilerplate is based on the [Plugin API](http://codex.wordpress.org/Plugin_API), [Coding Standards](http://codex.wordpress.org/WordPress_Coding_Standards), and [Documentation Standards](https://make.wordpress.org/core/handbook/best-practices/inline-documentation-standards/php/).
-* All classes, functions, and variables are documented so that you know what you need to change.
-* The Boilerplate uses a strict file organization scheme that corresponds both to the WordPress Plugin Repository structure, and that makes it easy to organize the files that compose the plugin.
-* The project includes a `.pot` file as a starting point for internationalization.
+- **API Integration:** Connects with the LetsReg API to fetch events data in real-time.
+- **Dynamic Event Table:** Displays events in a sortable and filterable table within the WordPress admin area.
+- **AJAX-Based Loading:** Load more events without refreshing the page, ensuring a smooth user experience.
+- **Event Management:** Easily add events to your WordPress site with a single click.
+- **Search Functionality:** Quickly find events using the built-in search bar.
+- **Sorting Indicators:** Visual double arrows indicate sortable columns and their current sorting direction.
+- **Debug Logging:** Comprehensive logging for easy troubleshooting and debugging.
+- **Security:** Utilizes WordPress nonces and capability checks to ensure secure operations.
 
 ## Installation
 
-The Boilerplate can be installed directly into your plugins folder "as-is". You will want to rename it and the classes inside of it to fit your needs. For example, if your plugin is named 'example-me' then:
+1. **Download the Plugin:**
+   - Clone the repository or download the ZIP file from GitHub.
 
-* rename files from `plugin-name` to `example-me`
-* change `plugin_name` to `example_me`
-* change `plugin-name` to `example-me`
-* change `Plugin_Name` to `Example_Me`
-* change `PLUGIN_NAME_` to `EXAMPLE_ME_`
+2. **Upload to WordPress:**
+   - Navigate to `Plugins > Add New` in your WordPress dashboard.
+   - Click on `Upload Plugin` and select the downloaded ZIP file.
+   - Alternatively, unzip the folder and upload it via FTP to the `/wp-content/plugins/` directory.
 
-It's safe to activate the plugin at this point. Because the Boilerplate has no real functionality there will be no menu items, meta boxes, or custom post types added until you write the code.
+3. **Activate the Plugin:**
+   - After uploading, go to `Plugins > Installed Plugins`.
+   - Find **Betait LetsReg Events Manager** and click `Activate`.
 
-## WordPress.org Preparation
+## Configuration
 
-The original launch of this version of the boilerplate included the folder structure needed for using your plugin on WordPress.org. That folder structure has been moved to its own repo here: https://github.com/DevinVinson/Plugin-Directory-Boilerplate
+1. **API Credentials:**
+   - After activation, navigate to `Settings > Betait LetsReg`.
+   - Enter your LetsReg API credentials, including the **Base URL** and **Access Token**.
+   - Save the settings.
 
-## Recommended Tools
+2. **Organizer ID:**
+   - Specify your **Organizer ID** to fetch events related to your organization.
+   - This can also be set in the settings page.
 
-### i18n Tools
+3. **Advanced Settings (Optional):**
+   - Toggle advanced options as needed.
+   - Customize sorting fields and directions according to your preferences.
 
-The WordPress Plugin Boilerplate uses a variable to store the text domain used when internationalizing strings throughout the Boilerplate. To take advantage of this method, there are tools that are recommended for providing correct, translatable files:
+## Usage
 
-* [Poedit](http://www.poedit.net/)
-* [makepot](http://i18n.svn.wordpress.org/tools/trunk/)
-* [i18n](https://github.com/grappler/i18n)
+1. **Accessing Events:**
+   - Go to `Betait LetsReg > Events` in your WordPress dashboard.
+   - The plugin will automatically fetch and display events from the LetsReg API.
 
-Any of the above tools should provide you with the proper tooling to internationalize the plugin.
+2. **Sorting Events:**
+   - Click on any sortable column header to sort the events.
+   - Visual double arrows indicate that the column is sortable.
+   - The active sorting direction is highlighted for clarity.
+
+3. **Loading More Events:**
+   - Click the `Load More` button at the bottom of the table to fetch additional events via AJAX.
+
+4. **Adding Events to WordPress:**
+   - Click the `+` button next to an event to add it directly to your WordPress site.
+   - Confirmation messages will notify you of successful additions.
+
+5. **Searching Events:**
+   - Use the search bar above the table to filter events by name in real-time.
+
+## Development
+
+### Project Status
+
+This project is actively under development. New features, improvements, and bug fixes are being continuously added. Contributions from the community are highly encouraged!
+
+### Contributing
+
+Contributions are welcome! Please follow these steps to contribute:
+
+1. **Fork the Repository**
+
+2. **Create a Feature Branch**
+    git checkout -b feature/YourFeature
+
+3. **Your Changes**
+    git commit -m "Add some feature"
+
+4. **Push to the Branch**
+    git push origin feature/YourFeature
+
+5. **Open a Pull Request**
+
+Please ensure your code adheres to the project's coding standards and includes appropriate tests where applicable.
+
+### Setting Up Locally
+1. **Clone the Repository:**
+git clone https://github.com/yourusername/betait-letsreg-events-manager.git
+
+2. **Install Dependencies:**
+Ensure you have WordPress set up locally.
+Place the plugin folder in the /wp-content/plugins/ directory.
+
+3. **Activate the Plugin:**
+Activate the plugin through the WordPress dashboard.
+
+## Reporting Issues
+If you encounter any issues or have suggestions for improvements, please open an issue on the GitHub Issues page.
+
+## Changelog
+1.0.0
+Initial release.
+API integration with LetsReg.
+Dynamic, sortable, and filterable event table.
+AJAX-based loading of additional events.
+Event management and addition to WordPress.
+Search functionality.
+Debug logging for troubleshooting.
+Security enhancements with nonces and capability checks.
 
 ## License
+This plugin is licensed under the GNU General Public License v3.0.
 
-The WordPress Plugin Boilerplate is licensed under the GPL v2 or later.
+## Support
+For support, please open an issue on the GitHub Issues page or contact the plugin author directly.
 
-> This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License, version 2, as published by the Free Software Foundation.
-
-> This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-
-> You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
-
-A copy of the license is included in the root of the plugin’s directory. The file is named `LICENSE`.
-
-## Important Notes
-
-### Licensing
-
-The WordPress Plugin Boilerplate is licensed under the GPL v2 or later; however, if you opt to use third-party code that is not compatible with v2, then you may need to switch to using code that is GPL v3 compatible.
-
-For reference, [here's a discussion](http://make.wordpress.org/themes/2013/03/04/licensing-note-apache-and-gpl/) that covers the Apache 2.0 License used by [Bootstrap](http://twitter.github.io/bootstrap/).
-
-### Includes
-
-Note that if you include your own classes, or third-party libraries, there are three locations in which said files may go:
-
-* `plugin-name/includes` is where functionality shared between the admin area and the public-facing parts of the site reside
-* `plugin-name/admin` is for all admin-specific functionality
-* `plugin-name/public` is for all public-facing functionality
-
-Note that previous versions of the Boilerplate did not include `Plugin_Name_Loader` but this class is used to register all filters and actions with WordPress.
-
-The example code provided shows how to register your hooks with the Loader class.
-
-### What About Other Features?
-
-The previous version of the WordPress Plugin Boilerplate included support for a number of different projects such as the [GitHub Updater](https://github.com/afragen/github-updater).
-
-These tools are not part of the core of this Boilerplate, as I see them as being additions, forks, or other contributions to the Boilerplate.
-
-The same is true of using tools like Grunt, Composer, etc. These are all fantastic tools, but not everyone uses them. In order to  keep the core Boilerplate as light as possible, these features have been removed and will be introduced in other editions, and will be listed and maintained on the project homepage.
-
-# Credits
-
-The WordPress Plugin Boilerplate was started in 2011 by [Tom McFarlin](http://twitter.com/tommcfarlin/) and has since included a number of great contributions. In March of 2015 the project was handed over by Tom to Devin Vinson.
-
-The current version of the Boilerplate was developed in conjunction with [Josh Eaton](https://twitter.com/jjeaton), [Ulrich Pogson](https://twitter.com/grapplerulrich), and [Brad Vincent](https://twitter.com/themergency).
-
-The homepage is based on a design as provided by [HTML5Up](http://html5up.net), the Boilerplate logo was designed by Rob McCaskill of [BungaWeb](http://bungaweb.com), and the site `favicon` was created by [Mickey Kay](https://twitter.com/McGuive7).
-
-## Documentation, FAQs, and More
-
-If you’re interested in writing any documentation or creating tutorials please [let me know](http://devinvinson.com/contact/) .
+Developed by Betait Solutions
+Visit our website at https://betait.no
