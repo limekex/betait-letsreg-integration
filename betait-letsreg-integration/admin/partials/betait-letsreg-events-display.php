@@ -45,6 +45,33 @@ if ($is_read_only) {
 
     <div id="betait-letsreg-container">
     <input type="text" id="betait-letsreg-search" placeholder="<?php esc_html_e( 'Søk etter arrangement...', 'betait-letsreg' ); ?>">
+     <!-- Toggles container -->
+  <div class="betait-letsreg-toggles">
+    <label class="toggle-label" for="betait_toggle_activeonly">
+      <?php esc_html_e('Kun aktive', 'betait-letsreg'); ?>
+    </label>
+    <label class="toggle-switch">
+      <input
+        type="checkbox"
+        id="betait_toggle_activeonly"
+        name="activeonly"
+      />
+      <span class="slider round"></span>
+    </label>
+
+    <label class="toggle-label" for="betait_toggle_searchableonly">
+      <?php esc_html_e('Offentlige s&oslash;kbare', 'betait-letsreg'); ?>
+    </label>
+    <label class="toggle-switch">
+      <input
+        type="checkbox"
+        id="betait_toggle_searchableonly"
+        name="searchableonly"
+      />
+      <span class="slider round"></span>
+    </label>
+  </div>
+</div>
     <table class="wp-list-table widefat fixed striped">
         <thead>
             <tr>

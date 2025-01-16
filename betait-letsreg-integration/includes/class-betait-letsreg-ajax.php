@@ -67,13 +67,13 @@ class Betait_LetsReg_Ajax {
         // Get pagination parameters from AJAX request
         $current_page = isset( $_POST['page'] ) ? intval( $_POST['page'] ) : 1;
         $limit        = 10; // Number of results per page
-        $offset       = ($current_page - 1) * $limit;
+        $offset       = ( $current_page - 1 ) * $limit;
     
         $this->log_debug( 'Fetching page ' . $current_page . ' with limit ' . $limit . ' and offset ' . $offset . '.' );
     
-        // Get optional filter parameters from AJAX request
-        $active_only      = isset( $_POST['activeonly'] ) ? filter_var( $_POST['activeonly'], FILTER_VALIDATE_BOOLEAN ) : false;
-        $searchable_only  = isset( $_POST['searchableonly'] ) ? filter_var( $_POST['searchableonly'], FILTER_VALIDATE_BOOLEAN ) : false;
+        // Get optional filter parameters (toggles) from AJAX request
+        $active_only     = isset( $_POST['activeonly'] ) ? filter_var( $_POST['activeonly'], FILTER_VALIDATE_BOOLEAN ) : false;
+        $searchable_only = isset( $_POST['searchableonly'] ) ? filter_var( $_POST['searchableonly'], FILTER_VALIDATE_BOOLEAN ) : false;
     
         $this->log_debug( 'Active Only: ' . ( $active_only ? 'true' : 'false' ) );
         $this->log_debug( 'Searchable Only: ' . ( $searchable_only ? 'true' : 'false' ) );
@@ -85,24 +85,23 @@ class Betait_LetsReg_Ajax {
     
         // Prepare query arguments
         $query_args = array(
-            'offset'                 => $offset,
-            'limit'                  => $limit,
-            'IncludeMunicipalities'  => 'true',
-            'IncludeAreas'           => 'true',
+            'offset'                => $offset,
+            'limit'                 => $limit,
+            'IncludeMunicipalities' => 'true',
+            'IncludeAreas'          => 'true',
         );
     
-        // Conditionally add 'activeonly' and 'searchableonly' if they are true
+        // Conditionally add 'activeonly' and 'searchableonly' if set to true
         if ( $active_only ) {
+            // Must match the API’s expected parameter name & casing
             $query_args['activeonly'] = 'true';
         }
-    
         if ( $searchable_only ) {
             $query_args['searchableonly'] = 'true';
         }
     
         // Build the full endpoint URL with query parameters
         $endpoint_url = add_query_arg( $query_args, $endpoint_url );
-    
         $this->log_debug( 'API Endpoint URL: ' . $endpoint_url );
     
         // Make the API request
@@ -132,7 +131,6 @@ class Betait_LetsReg_Ajax {
         $this->log_debug( 'API response body: ' . $body );
     
         $data = json_decode( $body, true );
-    
         if ( json_last_error() !== JSON_ERROR_NONE ) {
             $this->log_debug( 'JSON parse error: ' . json_last_error_msg() );
             wp_send_json_error( array( 'message' => __( 'Could not parse JSON response.', 'betait-letsreg' ) ) );
@@ -142,23 +140,25 @@ class Betait_LetsReg_Ajax {
         // Log entire JSON data for debugging
         $this->log_debug( 'Decoded JSON data: ' . print_r( $data, true ) );
     
-        // Check if $data is an array
+        // Ensure the response is an array
         if ( ! is_array( $data ) ) {
             $this->log_debug( 'API response is not an array.' );
             wp_send_json_error( array( 'message' => __( 'Unexpected API response format.', 'betait-letsreg' ) ) );
         }
     
-        // No date-based filtering; include all events
-        $active_events = $data;
-        $this->log_debug( 'No filtering applied. Total events received: ' . count( $active_events ) );
+        // Include all events (no date-based filtering)
+        $fetched_events = $data;
+        $this->log_debug( 'No date-based filtering applied. Total events received: ' . count( $fetched_events ) );
     
-        // Sort events by sort_field and sort_direction
+        // Sort events if requested
         $sort_field = isset( $_POST['sort_field'] ) ? sanitize_text_field( $_POST['sort_field'] ) : 'startDate';
-        $sort_direction = isset( $_POST['sort_direction'] ) && in_array( strtolower( $_POST['sort_direction'] ), array( 'asc', 'desc' ) ) ? strtolower( $_POST['sort_direction'] ) : 'asc';
+        $sort_direction = isset( $_POST['sort_direction'] ) && in_array( strtolower( $_POST['sort_direction'] ), array( 'asc', 'desc' ) )
+            ? strtolower( $_POST['sort_direction'] )
+            : 'asc';
     
         $this->log_debug( 'Sort field: ' . $sort_field . ', Sort direction: ' . $sort_direction );
     
-        usort( $active_events, function( $a, $b ) use ( $sort_field, $sort_direction ) {
+        usort( $fetched_events, function( $a, $b ) use ( $sort_field, $sort_direction ) {
             $valueA = isset( $a[ $sort_field ] ) ? $a[ $sort_field ] : '';
             $valueB = isset( $b[ $sort_field ] ) ? $b[ $sort_field ] : '';
     
@@ -167,42 +167,43 @@ class Betait_LetsReg_Ajax {
                 $timeA = strtotime( $valueA );
                 $timeB = strtotime( $valueB );
                 if ( $timeA == $timeB ) return 0;
-                return ($sort_direction === 'asc') ? ($timeA < $timeB ? -1 : 1) : ($timeA > $timeB ? -1 : 1);
+                return ( $sort_direction === 'asc' ) ? ( $timeA < $timeB ? -1 : 1 ) : ( $timeA > $timeB ? -1 : 1 );
             }
     
             if ( in_array( $sort_field, array( 'registeredParticipants', 'maxAllowedRegistrations' ) ) ) {
                 $numA = intval( $valueA );
                 $numB = intval( $valueB );
                 if ( $numA == $numB ) return 0;
-                return ($sort_direction === 'asc') ? ($numA < $numB ? -1 : 1) : ($numA > $numB ? -1 : 1);
+                return ( $sort_direction === 'asc' ) ? ( $numA < $numB ? -1 : 1 ) : ( $numA > $numB ? -1 : 1 );
             }
     
             if ( $sort_field === 'hasWaitinglist' ) {
                 $valA = strtolower( $valueA ) === 'ja' ? 1 : 0;
                 $valB = strtolower( $valueB ) === 'ja' ? 1 : 0;
                 if ( $valA == $valB ) return 0;
-                return ($sort_direction === 'asc') ? ($valA < $valB ? -1 : 1) : ($valA > $valB ? -1 : 1);
+                return ( $sort_direction === 'asc' ) ? ( $valA < $valB ? -1 : 1 ) : ( $valA > $valB ? -1 : 1 );
             }
     
             // For string fields
             $valA = strtolower( $valueA );
             $valB = strtolower( $valueB );
             if ( $valA == $valB ) return 0;
-            return ($sort_direction === 'asc') ? ( $valA < $valB ? -1 : 1 ) : ( $valA > $valB ? -1 : 1 );
+            return ( $sort_direction === 'asc' ) ? ( $valA < $valB ? -1 : 1 ) : ( $valA > $valB ? -1 : 1 );
         });
     
-        $this->log_debug( 'Sorted active events.' );
+        $this->log_debug( 'Sorted events using the chosen field and direction.' );
     
-        // Limit to 10 per page (even if API already handles this)
-        $active_events = array_slice( $active_events, 0, $limit );
-        $this->log_debug( 'Sliced active events to ' . count( $active_events ) . ' events.' );
+        // Limit to the specified limit (even if the API already does so)
+        $final_events = array_slice( $fetched_events, 0, $limit );
+        $this->log_debug( 'Sliced events down to ' . count( $final_events ) . ' records.' );
     
-        // Send data back to front-end
+        // Send data back to the front-end
         wp_send_json_success( array(
-            'events' => $active_events,
-            // 'pagination' => array(), // API does not return pagination, so this can be removed or adjusted
+            'events' => $final_events,
+            // 'pagination' => array(), // API doesn't return pagination; adjust if needed
         ) );
     }
+    
     
 
     /**
