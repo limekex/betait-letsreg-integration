@@ -155,7 +155,7 @@
             }
             logDebug('Updated currentPage to ' + currentPage + ' and totalPages to ' + totalPages);
   
-            // Check if more pages are available
+            // Check if more pages are availables
             if (events.length < limit) {
               $('#betait-letsreg-load-more').hide();
               logDebug('No more pages to load. Hiding load more button.');
