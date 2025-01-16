@@ -141,6 +141,8 @@ if ($is_read_only) {
 
     <div class="pagination-controls">
         <button id="betait-letsreg-load-more" class="button button-primary"><?php esc_html_e( 'Last mer', 'betait-letsreg' ); ?></button>
+        <span id="betait-letsreg-load-info" style="margin-left: 10px;"></span>
+  
     </div>
 </div>
 </main>

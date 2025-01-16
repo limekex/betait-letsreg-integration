@@ -8,17 +8,17 @@
  * registers the activation and deactivation functions, and defines a function
  * that starts the plugin.
  *
- * @link              http://betait.no/betaletsreg
+ * @link              http://example.com
  * @since             1.0.0
- * @package           Betait_Letsreg
+ * @package           Betait-Letsreg
  *
  * @wordpress-plugin
- * Plugin Name:       BeTA iT LetsReg Integration
- * Plugin URI:        http://betait.no/betaletsreg/betait-letsreg-uri/
- * Description:       This is a unoffical Integration of LetsReg 
+ * Plugin Name:       WordPress Plugin Boilerplate
+ * Plugin URI:        http://example.com/betait-letsreg-uri/
+ * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
  * Version:           1.0.0
- * Author:            BeTA iT
- * Author URI:        http://betait.no/betaletsreg/
+ * Author:            Your Name or Your Company
+ * Author URI:        http://example.com/
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       betait-letsreg
@@ -43,7 +43,7 @@ define( 'BETAIT_LETSREG_VERSION', '1.0.0' );
  */
 function activate_betait_letsreg() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-betait-letsreg-activator.php';
-	Betait_Letsreg_Activator::activate();
+	Betait-Letsreg_Activator::activate();
 }
 
 /**
@@ -52,7 +52,7 @@ function activate_betait_letsreg() {
  */
 function deactivate_betait_letsreg() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-betait-letsreg-deactivator.php';
-	Betait_Letsreg_Deactivator::deactivate();
+	Betait-Letsreg_Deactivator::deactivate();
 }
 
 register_activation_hook( __FILE__, 'activate_betait_letsreg' );
@@ -75,7 +75,7 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-betait-letsreg.php';
  */
 function run_betait_letsreg() {
 
-	$plugin = new Betait_Letsreg();
+	$plugin = new Betait-Letsreg();
 	$plugin->run();
 
 }

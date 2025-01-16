@@ -112,6 +112,28 @@ class Betait_LetsReg_Ajax {
             ),
         ) );
     
+        $curl_command = sprintf(
+            "curl -X GET \"%s\" \\\n"
+            . "     -H \"Authorization: Bearer %s\" \\\n"
+            . "     -H \"Accept: application/json\"",
+            $endpoint_url,
+            $access_token
+        );
+        
+        // Comment out this part if you don't want to log the cURL command ---
+        // If you want to also show $organizer_id, you could add it to the command or to the log:
+        $curl_command .= sprintf(" \\\n     # Organizer ID: %s", $organizer_id);
+        
+        // Now log the entire cURL command to debug.log
+        // If you're using a custom debug method:
+        $this->log_debug('Constructed cURL command for debug:' . "\n" . $curl_command);
+        
+        // Or if you prefer direct error_log:
+        error_log("[Betait_Letsreg_Debug_Curl] " . $curl_command);
+
+
+        
+
         if ( is_wp_error( $response ) ) {
             $error_message = $response->get_error_message();
             $this->log_debug( 'wp_remote_get error: ' . $error_message );
@@ -255,6 +277,7 @@ class Betait_LetsReg_Ajax {
                 'Accept'        => 'application/json',
             ),
         ) );
+
 
         if ( is_wp_error( $response ) ) {
             $error_message = $response->get_error_message();

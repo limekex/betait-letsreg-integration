@@ -170,3 +170,7 @@ span.sort-arrows {
   div#betait-letsreg-container, div.pagination-controls {
     margin: 20px 0px;
 }
+
+#wpfooter {
+  position: relative !important; 
+}

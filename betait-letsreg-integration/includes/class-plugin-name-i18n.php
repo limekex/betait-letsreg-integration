@@ -6,11 +6,11 @@
  * Loads and defines the internationalization files for this plugin
  * so that it is ready for translation.
  *
- * @link       http://betait.no/betaletsreg
+ * @link       http://example.com
  * @since      1.0.0
  *
- * @package    Betait_Letsreg
- * @subpackage Betait_Letsreg/includes
+ * @package    Betait-Letsreg
+ * @subpackage Betait-Letsreg/includes
  */
 
 /**
@@ -20,11 +20,11 @@
  * so that it is ready for translation.
  *
  * @since      1.0.0
- * @package    Betait_Letsreg
- * @subpackage Betait_Letsreg/includes
- * @author     Bjørn-Tore Almås <bt@betait.no>
+ * @package    Betait-Letsreg
+ * @subpackage Betait-Letsreg/includes
+ * @author     Your Name <email@example.com>
  */
-class Betait_Letsreg_i18n {
+class Betait-Letsreg_i18n {
 
 
 	/**

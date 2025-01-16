@@ -3,11 +3,11 @@
 /**
  * Fired during plugin deactivation
  *
- * @link       http://betait.no/betaletsreg
+ * @link       http://example.com
  * @since      1.0.0
  *
- * @package    Betait_Letsreg
- * @subpackage Betait_Letsreg/includes
+ * @package    Betait-Letsreg
+ * @subpackage Betait-Letsreg/includes
  */
 
 /**
@@ -16,11 +16,11 @@
  * This class defines all code necessary to run during the plugin's deactivation.
  *
  * @since      1.0.0
- * @package    Betait_Letsreg
- * @subpackage Betait_Letsreg/includes
- * @author     Bjørn-Tore Almås <bt@betait.no>
+ * @package    Betait-Letsreg
+ * @subpackage Betait-Letsreg/includes
+ * @author     Your Name <email@example.com>
  */
-class Betait_Letsreg_Deactivator {
+class Betait-Letsreg_Deactivator {
 
 	/**
 	 * Short Description. (use period)

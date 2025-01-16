@@ -3,11 +3,11 @@
 /**
  * Register all actions and filters for the plugin
  *
- * @link       http://betait.no/betaletsreg
+ * @link       http://example.com
  * @since      1.0.0
  *
- * @package    Betait_Letsreg
- * @subpackage Betait_Letsreg/includes
+ * @package    Betait-Letsreg
+ * @subpackage Betait-Letsreg/includes
  */
 
 /**
@@ -17,11 +17,11 @@
  * the plugin, and register them with the WordPress API. Call the
  * run function to execute the list of actions and filters.
  *
- * @package    Betait_Letsreg
- * @subpackage Betait_Letsreg/includes
- * @author     Bjørn-Tore Almås <bt@betait.no>
+ * @package    Betait-Letsreg
+ * @subpackage Betait-Letsreg/includes
+ * @author     Your Name <email@example.com>
  */
-class Betait_Letsreg_Loader {
+class Betait-Letsreg_Loader {
 
 	/**
 	 * The array of actions registered with WordPress.

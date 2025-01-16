@@ -3,11 +3,11 @@
 /**
  * The public-facing functionality of the plugin.
  *
- * @link       http://betait.no/betaletsreg
+ * @link       http://example.com
  * @since      1.0.0
  *
- * @package    Betait_Letsreg
- * @subpackage Betait_Letsreg/public
+ * @package    Betait-Letsreg
+ * @subpackage Betait-Letsreg/public
  */
 
 /**
@@ -16,11 +16,11 @@
  * Defines the plugin name, version, and two examples hooks for how to
  * enqueue the public-facing stylesheet and JavaScript.
  *
- * @package    Betait_Letsreg
- * @subpackage Betait_Letsreg/public
- * @author     Bjørn-Tore Almås <bt@betait.no>
+ * @package    Betait-Letsreg
+ * @subpackage Betait-Letsreg/public
+ * @author     Your Name <email@example.com>
  */
-class Betait_Letsreg_Public {
+class Betait-Letsreg_Public {
 
 	/**
 	 * The ID of this plugin.
@@ -65,10 +65,10 @@ class Betait_Letsreg_Public {
 		 * This function is provided for demonstration purposes only.
 		 *
 		 * An instance of this class should be passed to the run() function
-		 * defined in Betait_Letsreg_Loader as all of the hooks are defined
+		 * defined in Betait-Letsreg_Loader as all of the hooks are defined
 		 * in that particular class.
 		 *
-		 * The Betait_Letsreg_Loader will then create the relationship
+		 * The Betait-Letsreg_Loader will then create the relationship
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
@@ -88,10 +88,10 @@ class Betait_Letsreg_Public {
 		 * This function is provided for demonstration purposes only.
 		 *
 		 * An instance of this class should be passed to the run() function
-		 * defined in Betait_Letsreg_Loader as all of the hooks are defined
+		 * defined in Betait-Letsreg_Loader as all of the hooks are defined
 		 * in that particular class.
 		 *
-		 * The Betait_Letsreg_Loader will then create the relationship
+		 * The Betait-Letsreg_Loader will then create the relationship
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
