@@ -171,6 +171,44 @@ span.sort-arrows {
     margin: 20px 0px;
 }
 
+/* Event table overview */
+
+th.beta-letsreg-table-actions, td.beta-letsreg-table-actions {
+  width: 75px;
+}
+th.beta-letsreg-table-eventname,td.beta-letsreg-table-eventname {
+  width: 30%;
+}
+th.beta-letsreg-table-venue, td.beta-letsreg-table-venue {
+  width: 20%;
+}
+th.beta-letsreg-table-registred, td.beta-letsreg-table-registred {
+  width: 45px;
+}
+th.beta-letsreg-table-allowedregistred, td.beta-letsreg-table-allowedregistred {
+  width: 45px;
+}
+th.beta-letsreg-table-waitinglist, td.beta-letsreg-table-waitinglist {
+  width: 45px;
+}
+th.beta-letsreg-table-starttime, td.beta-letsreg-table-starttime {
+  width: 10%;
+}
+th.sortable.beta-letsreg-table-endtime, td.sortable.beta-letsreg-table-endtime {
+  width: 10%;
+}
+th.beta-letsreg-table-deadline, td.beta-letsreg-table-deadline {
+  width: 10%;
+}
+
+thead.beta-letsreg-headtable .beta-letsreg-table-header {
+  padding: 10px 10px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+
+
 #wpfooter {
   position: relative !important; 
 }

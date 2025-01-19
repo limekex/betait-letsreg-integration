@@ -31,33 +31,21 @@
     // If you want the table to refresh automatically when toggles change,
     // you could add listeners here, e.g.:
     //
-     document.getElementById('betait_toggle_activeonly')
-       ?.addEventListener('change', () => {
-         currentPage = 1;
-         totalLoadedSoFar = 0;
-         $('#betait-letsreg-events-table-body').empty();
-         loadEvents(currentPage);
-       });
+    // document.getElementById('betait_toggle_activeonly')
+    //   ?.addEventListener('change', () => {
+    //     currentPage = 1;
+    //     totalLoadedSoFar = 0;
+    //     $('#betait-letsreg-events-table-body').empty();
+    //     loadEvents(currentPage);
+    //   });
     //
-     document.getElementById('betait_toggle_searchableonly')
-       ?.addEventListener('change', () => {
-         currentPage = 1;
-         totalLoadedSoFar = 0;
-         $('#betait-letsreg-events-table-body').empty();
-         loadEvents(currentPage);
-       });
-
-       // 2) Set up a listener for the "published" toggle
-        document.getElementById('betait_toggle_published')
-        ?.addEventListener('change', applyFilters);
-
-        $('#betait_toggle_future, #betait_toggle_free')
-        .on('change', applyFilters);
-
-        // 3) Immediately apply filters so that unpublished rows are hidden on page load
-        applyFilters();
-
-       
+    // document.getElementById('betait_toggle_searchableonly')
+    //   ?.addEventListener('change', () => {
+    //     currentPage = 1;
+    //     totalLoadedSoFar = 0;
+    //     $('#betait-letsreg-events-table-body').empty();
+    //     loadEvents(currentPage);
+    //   });
 
   });
 
@@ -111,7 +99,7 @@
         searchableonly: searchableOnly,
       },
       beforeSend: function() {
-        $('#betait-letsreg-load-more').text('Laster...');
+        $('#betait-letsreg-load-more').text('Loading...');
         logDebug('AJAX request sent for page ' + page);
       },
       success: function(response) {
@@ -144,34 +132,27 @@
             const venue = event.location && event.location.name
               ? event.location.name
               : 'N/A';
-            
-            // Convert booleans to numeric or string for clarity
-            const isPublishedVal = event.published ? '1' : '0';
-            const isFreeVal = event.isPaidEvent ? '0' : '1'; // if isPaidEvent= true => not free
-            //const startTime = event.startDate || ''; // store ISO string or empty string
 
-            const row = `
-              <tr data-startdate="${startTime}"
-      data-published="${isPublishedVal}"
-      data-free="${isFreeVal}">
-                <td class="beta-letsreg-table-actions">
-                  <a href="${event.eventUrl}" target="_blank" title="Offentlig URL">
-                    <span class="dashicons dashicons-external"></span>
-                  </a>
-                  <button class="button button-secondary add-to-wp" data-event-id="${event.id}" title="${BetaitLetsReg.add_wp_label}">
-                    <span class="dashicons dashicons-plus"></span>
-                  </button>
-                </td>
-                <td class="beta-letsreg-table-eventname">${event.name}</td>
-                <td class="beta-letsreg-table-venue">${venue}</td>
-                <td class="beta-letsreg-table-registred">${event.registeredParticipants}</td>
-                <td class="beta-letsreg-table-allowedregistred">${event.maxAllowedRegistrations}</td>
-                <td class="beta-letsreg-table-waitinglist">${event.hasWaitinglist ? '<span class="dashicons dashicons-yes"></span>' : '<span class="dashicons dashicons-no"></span>'}</td>
-                <td class="beta-letsreg-table-starttime">${startTime}</td>
-                <td class="beta-letsreg-table-endtime">${endTime}</td>
-                <td class="beta-letsreg-table-deadline">${regDeadline}</td>
-              </tr>
-            `;
+              const row = `
+							<tr>
+								<td class="beta-letsreg-table-actions"
+									<a href="${event.eventUrl}" target="_blank" title="Offentlig URL">
+										<span class="dashicons dashicons-external"></span>
+									</a>
+									<button class="button button-secondary add-to-wp" data-event-id="${event.id}" title="${BetaitLetsReg.add_wp_label}">
+										<span class="dashicons dashicons-plus"></span>
+									</button>
+								</td>
+								<td class="beta-letsreg-table-eventname">${event.name}</td>
+								<td class="beta-letsreg-table-venue">${venue}</td>
+								<td class="beta-letsreg-table-registred">${event.registeredParticipants}</td>
+								<td class="beta-letsreg-table-allowedregistred">${event.maxAllowedRegistrations}</td>
+								<td class="beta-letsreg-table-waitinglist">${event.hasWaitinglist ? 'Ja' : 'Nei'}</td>
+								<td class="beta-letsreg-table-starttime">${startTime}</td>
+								<td class="beta-letsreg-table-endtime">${endTime}</td>
+								<td class="beta-letsreg-table-deadline">${regDeadline}</td>
+							</tr>
+						`;
             tbody.append(row);
             logDebug('Appended event to table:', event);
           });
@@ -190,12 +171,13 @@
           // Update how many we've loaded so far (local approach)
           totalLoadedSoFar += events.length;
 
-          // Because offset is page-based, we won't do item-based math
-          // Instead, the newly added items span from totalLoadedSoFar - events.length + 1
-          // up to totalLoadedSoFar
-          const startRange = totalLoadedSoFar - events.length + 1;
-          const endRange = totalLoadedSoFar;
-
+          // For the new batch, figure out the displayed range
+          // Because currentPage was just incremented:
+          // previousPage = currentPage - 1
+          // So the new events go from (previousPage - 1)*limit + 1  to  (previousPage - 1)*limit + events.length
+          const prevPage = currentPage - 1;
+          const startRange = (prevPage - 1) * limit + 1;
+          const endRange = (prevPage - 1) * limit + events.length;
           updateLoadStatus(startRange, endRange, totalLoadedSoFar);
 
           // If fewer than limit, no more pages
@@ -203,7 +185,7 @@
             $('#betait-letsreg-load-more').hide();
             logDebug('No more pages to load; last batch was under limit.');
           } else {
-            $('#betait-letsreg-load-more').text('Last flere...');
+            $('#betait-letsreg-load-more').text('Load More');
             logDebug('Load more button reset to "Load More".');
           }
 
@@ -216,66 +198,14 @@
           // success=false
           alert(response.data.message);
           logDebug('AJAX request returned error: ' + response.data.message);
-          $('#betait-letsreg-load-more').text('Last flere');
+          $('#betait-letsreg-load-more').text('Load More');
         }
       },
       error: function(xhr, status, error) {
         alert('An error occurred: ' + error);
         logDebug('AJAX request failed:', { xhr: xhr, status: status, error: error });
-        $('#betait-letsreg-load-more').text('Last flere');
+        $('#betait-letsreg-load-more').text('Load More');
       }
-    });
-  }
-
-  function applyFilters() {
-    // Check toggles
-    const futureOnly = $('#betait_toggle_future').prop('checked');
-    const publishedOnly = $('#betait_toggle_published').prop('checked');
-    const freeOnly = $('#betait_toggle_free').prop('checked');
-  
-    // Check the existing search query
-    const searchQuery = $('#betait-letsreg-search').val().toLowerCase();
-  
-    // Current time for "Fremtidige" check
-    const now = Date.now();
-  
-    // Loop over all rows
-    $('#betait-letsreg-events-table-body tr').each(function() {
-      const row = $(this);
-  
-      // Existing text-based search logic
-      const eventName = row.find('td:nth-child(2)').text().toLowerCase();
-      let isVisible = eventName.includes(searchQuery);
-  
-      // Check the data attributes for future / published / free
-      if (isVisible && futureOnly) {
-        const startDate = row.data('startdate'); // e.g. "2025-05-01T12:00:00"
-        if (startDate) {
-          const startTime = new Date(startDate).getTime();
-          // If event started already, hide it
-          if (startTime <= now) {
-            isVisible = false;
-          }
-        }
-      }
-  
-      if (isVisible && publishedOnly) {
-        const publishedVal = row.data('published'); // '1' or '0'
-        // Hide if not published
-        if (publishedVal !== '1') {
-          isVisible = false;
-        }
-      }
-  
-      if (isVisible && freeOnly) {
-        const freeVal = row.data('free'); // "1" or "0"
-        if (freeVal !== '1') {
-          isVisible = false;
-        }
-      }
-  
-      // Show or hide the row
-      row.toggle(isVisible);
     });
   }
 
@@ -284,7 +214,9 @@
    * If your API provides a total, replace totalSoFar with the official total
    */
   function updateLoadStatus(start, end, totalSoFar) {
-    const infoText = `Lastet ${start}–${end} av ${totalSoFar} arrangementer.`;
+    // If your API has a total count:  let totalCount = response.data.totalCount;
+    // then do: const infoText = `Loaded ${start}-${end} of ${totalCount}`
+    const infoText = `Loaded ${start}–${end} of ${totalSoFar}`;
     $('#betait-letsreg-load-info').text(infoText);
     logDebug(infoText);
   }
@@ -455,15 +387,7 @@
 
     // For hasWaitinglist: 'Yes' -> 1, 'No' -> 0
     if (sortField === 'hasWaitinglist') {
-      const cellHTML = $(row).find('td').eq(index).html().toLowerCase();
-      if (cellHTML.includes('dashicons-no')) {
-        // no waiting list
-        return 0;
-      } else if (cellHTML.includes('dashicons-yes')) {
-        // has waiting list
-        return 1;
-      }
-      return 0; // fallback
+      return cellText.toLowerCase() === 'yes' ? 1 : 0;
     }
 
     // For name, venue, etc.:
