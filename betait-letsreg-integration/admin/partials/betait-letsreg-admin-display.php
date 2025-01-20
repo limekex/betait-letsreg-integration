@@ -151,6 +151,53 @@ $organizers_list   = get_option('betait_letsreg_organizers_list', []);
                 </button></td>
                 </tr>
 
+                <tr>
+    <th scope="row"><?php esc_html_e('Velg hvor arrangementer skal lagres', 'betait-letsreg'); ?></th>
+    <td>
+
+      <!-- The Events Calendar Option -->
+      <?php if ( $the_events_active ) : ?>
+        <label>
+          <input type="radio" name="betait_letsreg_local_storage" 
+                 value="tribe_events"
+                 <?php checked( $storage_choice, 'tribe_events' ); ?> />
+          <?php esc_html_e('The Events Calendar (aktiv)', 'betait-letsreg'); ?>
+        </label>
+      <?php else : ?>
+        <label style="color:#999;">
+          <input type="radio" name="betait_letsreg_local_storage" 
+                 value="tribe_events" 
+                 disabled="disabled" />
+          <?php esc_html_e('The Events Calendar (ikke aktiv)', 'betait-letsreg'); ?>
+        </label>
+      <?php endif; ?>
+      <br>
+
+      <!-- Own CPT Option -->
+      <label>
+        <input type="radio" name="betait_letsreg_local_storage" 
+               value="lr-arr"
+               <?php checked( $storage_choice, 'lr-arr' ); ?> />
+        <?php esc_html_e('Egen posttype: "BeTA LetsReg Arrangementer"', 'betait-letsreg'); ?>
+      </label>
+      <br>
+
+      <!-- WP Native Post Option -->
+      <label>
+        <input type="radio" name="betait_letsreg_local_storage" 
+               value="post"
+               <?php checked( $storage_choice, 'post' ); ?> />
+        <?php esc_html_e('WordPress standard innlegg (post)', 'betait-letsreg'); ?>
+      </label>
+      <br>
+
+      <p class="description">
+        <?php esc_html_e('Velg hvordan nye arrangementer fra LetsReg skal lagres lokalt.', 'betait-letsreg'); ?>
+      </p>
+
+    </td>
+  </tr>
+
                 <!-- Debug-modus -->
                 <tr>
                     <th><?php esc_html_e('Debug-modus', 'betait-letsreg'); ?></th>
