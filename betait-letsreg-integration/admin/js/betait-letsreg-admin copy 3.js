@@ -59,7 +59,7 @@
                 searchableonly: false, // Set to true if you want only searchable events
             },
             beforeSend: function() {
-                $('#betait-letsreg-load-more').text('Loading...');
+                $('#betait-letsreg-load-more').text('Laster...');
                 logDebug('AJAX request sent for page ' + page);
             },
             success: function(response) {
@@ -69,7 +69,7 @@
                     const tbody = $('#betait-letsreg-events-table-body');
     
                     if (events.length === 0 && page === 1) {
-                        tbody.append('<tr><td colspan="9">No events found.</td></tr>');
+                        tbody.append('<tr><td colspan="9">Ingen arrangementer funnet.</td></tr>');
                         $('#betait-letsreg-load-more').hide();
                         logDebug('No events found.');
                         return;

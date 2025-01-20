@@ -67,9 +67,11 @@ class Betait_LetsReg_Ajax {
         // Get pagination parameters from AJAX request
         $current_page = isset( $_POST['page'] ) ? intval( $_POST['page'] ) : 1;
         $limit        = 10; // Number of results per page
-        $offset       = ( $current_page - 1 ) * $limit;
     
-        $this->log_debug( 'Fetching page ' . $current_page . ' with limit ' . $limit . ' and offset ' . $offset . '.' );
+        // Page-based offset => offset = (page - 1)
+        $offset = $current_page - 1;
+    
+        $this->log_debug( "Fetching page {$current_page} with limit {$limit} and offset (page-based)={$offset}." );
     
         // Get optional filter parameters (toggles) from AJAX request
         $active_only     = isset( $_POST['activeonly'] ) ? filter_var( $_POST['activeonly'], FILTER_VALIDATE_BOOLEAN ) : false;
@@ -85,6 +87,7 @@ class Betait_LetsReg_Ajax {
     
         // Prepare query arguments
         $query_args = array(
+            // Page-based offset
             'offset'                => $offset,
             'limit'                 => $limit,
             'IncludeMunicipalities' => 'true',
@@ -112,6 +115,8 @@ class Betait_LetsReg_Ajax {
             ),
         ) );
     
+        // Construct cURL command for debug (optional)
+        /*
         $curl_command = sprintf(
             "curl -X GET \"%s\" \\\n"
             . "     -H \"Authorization: Bearer %s\" \\\n"
@@ -119,21 +124,13 @@ class Betait_LetsReg_Ajax {
             $endpoint_url,
             $access_token
         );
-        
-        // Comment out this part if you don't want to log the cURL command ---
-        // If you want to also show $organizer_id, you could add it to the command or to the log:
         $curl_command .= sprintf(" \\\n     # Organizer ID: %s", $organizer_id);
-        
-        // Now log the entire cURL command to debug.log
-        // If you're using a custom debug method:
+    
         $this->log_debug('Constructed cURL command for debug:' . "\n" . $curl_command);
-        
-        // Or if you prefer direct error_log:
         error_log("[Betait_Letsreg_Debug_Curl] " . $curl_command);
 
-
-        
-
+        */
+    
         if ( is_wp_error( $response ) ) {
             $error_message = $response->get_error_message();
             $this->log_debug( 'wp_remote_get error: ' . $error_message );
@@ -184,7 +181,7 @@ class Betait_LetsReg_Ajax {
             $valueA = isset( $a[ $sort_field ] ) ? $a[ $sort_field ] : '';
             $valueB = isset( $b[ $sort_field ] ) ? $b[ $sort_field ] : '';
     
-            // Handle different data types
+            // Handle date fields
             if ( in_array( $sort_field, array( 'startDate', 'endDate', 'registrationStartDate' ) ) ) {
                 $timeA = strtotime( $valueA );
                 $timeB = strtotime( $valueB );
@@ -192,6 +189,7 @@ class Betait_LetsReg_Ajax {
                 return ( $sort_direction === 'asc' ) ? ( $timeA < $timeB ? -1 : 1 ) : ( $timeA > $timeB ? -1 : 1 );
             }
     
+            // Handle numeric fields
             if ( in_array( $sort_field, array( 'registeredParticipants', 'maxAllowedRegistrations' ) ) ) {
                 $numA = intval( $valueA );
                 $numB = intval( $valueB );
@@ -199,9 +197,11 @@ class Betait_LetsReg_Ajax {
                 return ( $sort_direction === 'asc' ) ? ( $numA < $numB ? -1 : 1 ) : ( $numA > $numB ? -1 : 1 );
             }
     
+            // Handle "hasWaitinglist" as "ja"/"nei" or "yes"/"no"
             if ( $sort_field === 'hasWaitinglist' ) {
+                // Here we're checking if it was 'ja' or 'nei', but adapt as needed
                 $valA = strtolower( $valueA ) === 'ja' ? 1 : 0;
-                $valB = strtolower( $valueB ) === 'ja' ? 1 : 0;
+                $valB = strtolower( $valueB ) === 'nei' ? 1 : 0;
                 if ( $valA == $valB ) return 0;
                 return ( $sort_direction === 'asc' ) ? ( $valA < $valB ? -1 : 1 ) : ( $valA > $valB ? -1 : 1 );
             }
@@ -225,6 +225,7 @@ class Betait_LetsReg_Ajax {
             // 'pagination' => array(), // API doesn't return pagination; adjust if needed
         ) );
     }
+    
     
     
 
@@ -295,7 +296,7 @@ class Betait_LetsReg_Ajax {
         }
 
         $body = wp_remote_retrieve_body( $response );
-        $this->log_debug( 'API response body: ' . $body );
+        // $this->log_debug( 'API response body: ' . $body ); // Uncomment for debugging
 
         $data = json_decode( $body, true );
 
@@ -304,7 +305,7 @@ class Betait_LetsReg_Ajax {
             wp_send_json_error( array( 'message' => __( 'Kunne ikke parse JSON-responsen.', 'betait-letsreg' ) ) );
         }
         $this->log_debug( 'JSON parsed successfully.' );
-        $this->log_debug( 'Decoded JSON data: ' . print_r( $data, true ) );
+        // $this->log_debug( 'Decoded JSON data: ' . print_r( $data, true ) ); // Uncomment for debugging
 
         $event = $data ?? null; // Siden API-et returnerer en enkelt event som array
         if ( ! $event ) {

@@ -70,63 +70,87 @@ if ($is_read_only) {
       />
       <span class="slider round"></span>
     </label>
+
+    <label class="toggle-label" for="betait_toggle_future">
+    <?php esc_html_e('Fremtidige', 'betait-letsreg'); ?>
+  </label>
+  <label class="toggle-switch">
+    <input type="checkbox" id="betait_toggle_future" name="futureonly" />
+    <span class="slider round"></span>
+  </label>
+
+  <label class="toggle-label" for="betait_toggle_published">
+    <?php esc_html_e('Publiserte', 'betait-letsreg'); ?>
+  </label>
+  <label class="toggle-switch">
+    <input type="checkbox" id="betait_toggle_published" name="publishedonly" checked/>
+    <span class="slider round"></span>
+  </label>
+
+  <label class="toggle-label" for="betait_toggle_free">
+    <?php esc_html_e('Gratis', 'betait-letsreg'); ?>
+  </label>
+  <label class="toggle-switch">
+    <input type="checkbox" id="betait_toggle_free" name="freeonly" />
+    <span class="slider round"></span>
+  </label>
   </div>
 </div>
     <table class="wp-list-table widefat fixed striped">
-        <thead>
+        <thead class="beta-letsreg-headtable">
             <tr>
-                <th><?php esc_html_e( 'Aksjoner', 'betait-letsreg' ); ?></th>
-                <th colspan="2" class="sortable" data-sort="name">
+                <th class="beta-letsreg-table-actions beta-letsreg-table-header"></th>
+                <th class="sortable beta-letsreg-table-eventname beta-letsreg-table-header" data-sort="name">
                     <?php esc_html_e( 'Arrangementstittel', 'betait-letsreg' ); ?>
                     <span class="sort-arrows">
                         <span class="dashicons dashicons-arrow-up"></span>
                         <span class="dashicons dashicons-arrow-down"></span>
                     </span>
                 </th>
-                <th class="sortable" data-sort="venue">
+                <th class="sortable beta-letsreg-table-venue beta-letsreg-table-header" data-sort="venue">
                     <?php esc_html_e( 'Stedsnavn', 'betait-letsreg' ); ?>
                     <span class="sort-arrows">
                         <span class="dashicons dashicons-arrow-up"></span>
                         <span class="dashicons dashicons-arrow-down"></span>
                     </span>
                 </th>
-                <th class="sortable" data-sort="registeredParticipants">
-                    <?php esc_html_e( 'Registrerte', 'betait-letsreg' ); ?>
+                <th class="sortable beta-letsreg-table-registred beta-letsreg-table-header" data-sort="registeredParticipants">
+                <span class="dashicons dashicons-admin-users" title="<?php esc_html_e( 'Antalle registrerte', 'betait-letsreg' ); ?>"></span>
                     <span class="sort-arrows">
                         <span class="dashicons dashicons-arrow-up"></span>
                         <span class="dashicons dashicons-arrow-down"></span>
                     </span>
                 </th>
-                <th class="sortable" data-sort="maxAllowedRegistrations">
-                    <?php esc_html_e( 'Max påmeldte', 'betait-letsreg' ); ?>
+                <th class="sortable beta-letsreg-table-allowedregistred beta-letsreg-table-header" data-sort="maxAllowedRegistrations">
+                <span class="dashicons dashicons-groups" title="<?php esc_html_e( 'Max antall', 'betait-letsreg' ); ?>"></span>
                     <span class="sort-arrows">
                         <span class="dashicons dashicons-arrow-up"></span>
                         <span class="dashicons dashicons-arrow-down"></span>
                     </span>
                 </th>
-                <th class="sortable" data-sort="hasWaitinglist">
-                    <?php esc_html_e( 'Venteliste', 'betait-letsreg' ); ?>
+                <th class="sortable beta-letsreg-table-waitinglist beta-letsreg-table-header" data-sort="hasWaitinglist">
+                <span class="dashicons dashicons-bell" title="<?php esc_html_e( 'Venteliste', 'betait-letsreg' ); ?>"></span>
                     <span class="sort-arrows">
                         <span class="dashicons dashicons-arrow-up"></span>
                         <span class="dashicons dashicons-arrow-down"></span>
                     </span>
                 </th>
-                <th class="sortable" data-sort="startDate">
-                    <?php esc_html_e( 'Tidspunkt', 'betait-letsreg' ); ?>
+                <th class="sortable beta-letsreg-table-starttime beta-letsreg-table-header" data-sort="startDate">
+                <?php esc_html_e( 'Start', 'betait-letsreg' ); ?>
                     <span class="sort-arrows">
                         <span class="dashicons dashicons-arrow-up"></span>
                         <span class="dashicons dashicons-arrow-down"></span>
                     </span>
                 </th>
-                <th class="sortable" data-sort="endDate">
-                    <?php esc_html_e( 'Slutt Tidspunkt', 'betait-letsreg' ); ?>
+                <th class="sortable beta-letsreg-table-endtime beta-letsreg-table-header" data-sort="endDate">
+                    <?php esc_html_e( 'Slutt', 'betait-letsreg' ); ?>
                     <span class="sort-arrows">
                         <span class="dashicons dashicons-arrow-up"></span>
                         <span class="dashicons dashicons-arrow-down"></span>
                     </span>
                 </th>
-                <th class="sortable" data-sort="registrationStartDate">
-                    <?php esc_html_e( 'Påmeldingsfrist', 'betait-letsreg' ); ?>
+                <th class="sortable beta-letsreg-table-deadline beta-letsreg-table-header" data-sort="registrationStartDate">
+                    <?php esc_html_e( 'Påmelding', 'betait-letsreg' ); ?>
                     <span class="sort-arrows">
                         <span class="dashicons dashicons-arrow-up"></span>
                         <span class="dashicons dashicons-arrow-down"></span>
