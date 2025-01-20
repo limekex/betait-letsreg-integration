@@ -47,7 +47,7 @@ if ($is_read_only) {
     <input type="text" id="betait-letsreg-search" placeholder="<?php esc_html_e( 'Søk etter arrangement...', 'betait-letsreg' ); ?>">
      <!-- Toggles container -->
   <div class="betait-letsreg-toggles">
-    <label class="toggle-label" for="betait_toggle_activeonly">
+    <div class="toggle-wrapper"><label class="toggle-label" for="betait_toggle_activeonly">
       <?php esc_html_e('Kun aktive', 'betait-letsreg'); ?>
     </label>
     <label class="toggle-switch">
@@ -58,7 +58,7 @@ if ($is_read_only) {
       />
       <span class="slider round"></span>
     </label>
-
+        </div><div class="toggle-wrapper">
     <label class="toggle-label" for="betait_toggle_searchableonly">
       <?php esc_html_e('Offentlige s&oslash;kbare', 'betait-letsreg'); ?>
     </label>
@@ -70,7 +70,7 @@ if ($is_read_only) {
       />
       <span class="slider round"></span>
     </label>
-
+    </div><div class="toggle-wrapper">
     <label class="toggle-label" for="betait_toggle_future">
     <?php esc_html_e('Fremtidige', 'betait-letsreg'); ?>
   </label>
@@ -78,22 +78,22 @@ if ($is_read_only) {
     <input type="checkbox" id="betait_toggle_future" name="futureonly" />
     <span class="slider round"></span>
   </label>
-
+  </div><div class="toggle-wrapper">
   <label class="toggle-label" for="betait_toggle_published">
-    <?php esc_html_e('Publiserte', 'betait-letsreg'); ?>
+    <?php esc_html_e('Kladd', 'betait-letsreg'); ?>
   </label>
   <label class="toggle-switch">
-    <input type="checkbox" id="betait_toggle_published" name="publishedonly" checked/>
+    <input type="checkbox" id="betait_toggle_published" name="publishedonly"/>
     <span class="slider round"></span>
   </label>
-
+  </div><div class="toggle-wrapper">
   <label class="toggle-label" for="betait_toggle_free">
     <?php esc_html_e('Gratis', 'betait-letsreg'); ?>
   </label>
   <label class="toggle-switch">
     <input type="checkbox" id="betait_toggle_free" name="freeonly" />
     <span class="slider round"></span>
-  </label>
+  </label></div>
   </div>
 </div>
     <table class="wp-list-table widefat fixed striped">
@@ -109,6 +109,13 @@ if ($is_read_only) {
                 </th>
                 <th class="sortable beta-letsreg-table-venue beta-letsreg-table-header" data-sort="venue">
                     <?php esc_html_e( 'Stedsnavn', 'betait-letsreg' ); ?>
+                    <span class="sort-arrows">
+                        <span class="dashicons dashicons-arrow-up"></span>
+                        <span class="dashicons dashicons-arrow-down"></span>
+                    </span>
+                </th>
+                <th class="sortable beta-letsreg-table-soldfor beta-letsreg-table-header" data-sort="soldfor">
+                <span class="dashicons dashicons-money" title="<?php esc_html_e( 'Omsetning', 'betait-letsreg' ); ?>"></span>
                     <span class="sort-arrows">
                         <span class="dashicons dashicons-arrow-up"></span>
                         <span class="dashicons dashicons-arrow-down"></span>
