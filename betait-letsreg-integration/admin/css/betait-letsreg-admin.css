@@ -218,7 +218,67 @@ thead.beta-letsreg-headtable .beta-letsreg-table-header {
   border: 1px solid;
 }
 
+/* Arrangør CPT Menygruppering */
+#toplevel_page_betait-letsreg-main li a[href="edit.php?post_type=lr-arr"],
+#toplevel_page_betait-letsreg-main li a[href="edit-tags.php?taxonomy=lrarr_cat&post_type=lr-arr"],
+#toplevel_page_betait-letsreg-main li a[href="edit-tags.php?taxonomy=lrarr_tag&post_type=lr-arr"],
+#toplevel_page_betait-letsreg-main li a[href="edit-tags.php?taxonomy=lrarr_arrangor&post_type=lr-arr"],
+#toplevel_page_betait-letsreg-main li a[href="edit-tags.php?taxonomy=lrarr_venue&post_type=lr-arr"] {
+  background-color: #7d7d7d !important;
+}
+
+.toplevel_page_betait-letsreg-main .wp-submenu {
+  padding: 0px !important;
+}
+
+/* Arrangør CPT Metaboxes */
+
+.lrarr-metabox-field-group {
+  border: 1px solid #eee;
+  padding: 15px;
+  margin-bottom: 15px;
+  background: #fafafa;
+}
+.lrarr-metabox-field-group h3 {
+  margin-top: 0;
+  font-size: 1.1em;
+  background: #f0f0f0;
+  padding: 5px 10px;
+}
+.lrarr-metabox-field {
+  display: flex;
+  margin-bottom: 8px;
+}
+.lrarr-metabox-field label {
+  width: 200px;
+  font-weight: 600;
+}
+.lrarr-metabox-field input[type="text"],
+.lrarr-metabox-field input[type="checkbox"],
+.lrarr-metabox-field textarea {
+  flex: 1;
+}
+.lrarr-boolean-group label {
+  font-weight: normal;
+  margin-right: 10px;
+}
+.lrarr-boolean-group input[type="checkbox"] {
+  margin-right: 4px;
+}
+.lrarr-prices-table {
+  border-collapse: collapse;
+  width: 100%;
+  background: #fff;
+}
+.lrarr-prices-table th, .lrarr-prices-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+}
+.lrarr-prices-table th {
+  background: #eee;
+}
 
 #wpfooter {
   position: relative !important; 
 }
+
