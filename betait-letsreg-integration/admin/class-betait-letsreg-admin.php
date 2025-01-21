@@ -97,7 +97,141 @@ class Betait_Letsreg_Admin {
 	 * -----------------------------------------------------------------------------------------
      */
 
+
+         /**
+     * Legg til et eget posttype-med taksonomier hvis brukeren har valgt dette.
+     *
+     * @since 1.0.0
+     * @return void
+     */
+
+
+     public function init_cpt_and_taxonomies() {
+        // Hook into WordPress init
+        add_action( 'init', array( $this, 'maybe_register_lrarr_cpt_and_tax' ) );
+    }
+    
     /**
+     * Conditionally register 'lr-arr' CPT and any related taxonomies
+     * if the user’s storage choice is 'lr-arr'.
+     */
+    public function maybe_register_lrarr_cpt_and_tax() {
+        $choice = get_option( 'betait_letsreg_local_storage', 'lr-arr' );
+    
+        // Only register the CPT/taxonomies if user wants the custom method
+        if ( 'lr-arr' !== $choice ) {
+            return;
+        }
+    
+        // 1) Register the custom post type: 'lr-arr'
+        $labels = array(
+            'name'               => __( 'LR Arrangementer', 'betait-letsreg' ),
+            'singular_name'      => __( 'LR Arrangement', 'betait-letsreg' ),
+            'add_new'            => __( 'Legg til arrangement', 'betait-letsreg' ),
+            'add_new_item'       => __( 'Legg til nytt arrangement', 'betait-letsreg' ),
+            'edit_item'          => __( 'Rediger arrangement', 'betait-letsreg' ),
+            'new_item'           => __( 'Nytt arrangement', 'betait-letsreg' ),
+            'view_item'          => __( 'Vis arrangement', 'betait-letsreg' ),
+            'search_items'       => __( 'Søk arrangementer', 'betait-letsreg' ),
+            'not_found'          => __( 'Ingen arrangementer funnet', 'betait-letsreg' ),
+            'not_found_in_trash' => __( 'Ingen arrangementer i papirkurv', 'betait-letsreg' ),
+        );
+    
+        $args = array(
+            'label'               => __( 'LR Arrangementer', 'betait-letsreg' ),
+            'labels'              => $labels,
+            'public'              => true,  // or false if you want hidden
+            'hierarchical'        => false,
+            'supports'            => array( 'title', 'editor', 'author', 'thumbnail', 'excerpt' ),
+            'has_archive'         => true,
+            'rewrite'             => array( 'slug' => 'lr-arr' ),
+            'capability_type'     => 'post',
+            'show_in_menu'        => true,   // to appear in the WP admin menu
+            'menu_position'       => 6,
+            'menu_icon'           => 'dashicons-calendar', // or something else
+        );
+        register_post_type( 'lr-arr', $args );
+    
+        // 2) Register hierarchical taxonomy: “Event Category”
+        $cat_labels = array(
+            'name'              => __( 'Arr Kategorier', 'betait-letsreg' ),
+            'singular_name'     => __( 'Arr Kategori', 'betait-letsreg' ),
+            'search_items'      => __( 'Søk kategorier', 'betait-letsreg' ),
+            'all_items'         => __( 'Alle kategorier', 'betait-letsreg' ),
+            'parent_item'       => __( 'Foreldre-kategori', 'betait-letsreg' ),
+            'parent_item_colon' => __( 'Foreldre-kategori:', 'betait-letsreg' ),
+            'edit_item'         => __( 'Rediger kategori', 'betait-letsreg' ),
+            'update_item'       => __( 'Oppdater kategori', 'betait-letsreg' ),
+            'add_new_item'      => __( 'Legg til ny kategori', 'betait-letsreg' ),
+            'new_item_name'     => __( 'Nytt kategori-navn', 'betait-letsreg' ),
+        );
+        register_taxonomy(
+            'lrarr_cat',
+            'lr-arr',
+            array(
+                'hierarchical' => true,
+                'labels'       => $cat_labels,
+                'show_ui'      => true,
+                'show_admin_column' => true,
+                'rewrite'      => array( 'slug' => 'lrarr-cat' ),
+            )
+        );
+    
+        // 3) Register non-hierarchical taxonomy: “Event Tags”
+        $tag_labels = array(
+            'name'               => __( 'Arr Tags', 'betait-letsreg' ),
+            'singular_name'      => __( 'Arr Tag', 'betait-letsreg' ),
+            'search_items'       => __( 'Søk tags', 'betait-letsreg' ),
+            'popular_items'      => __( 'Populære tags', 'betait-letsreg' ),
+            'all_items'          => __( 'Alle tags', 'betait-letsreg' ),
+            'edit_item'          => __( 'Rediger tag', 'betait-letsreg' ),
+            'update_item'        => __( 'Oppdater tag', 'betait-letsreg' ),
+            'add_new_item'       => __( 'Legg til ny tag', 'betait-letsreg' ),
+            'new_item_name'      => __( 'Nytt tag-navn', 'betait-letsreg' ),
+            'separate_items_with_commas' => __( 'Skill tags med komma', 'betait-letsreg' ),
+        );
+        register_taxonomy(
+            'lrarr_tag',
+            'lr-arr',
+            array(
+                'hierarchical' => false,
+                'labels'       => $tag_labels,
+                'show_ui'      => true,
+                'show_admin_column' => true,
+                'rewrite'      => array( 'slug' => 'lrarr-tag' ),
+            )
+        );
+    
+        // 4) (Optional) Non-hierarchical tax for venue, or a separate approach:
+        register_taxonomy(
+            'lrarr_venue',
+            'lr-arr',
+            array(
+                'hierarchical' => false,
+                'labels'       => array( 'name' => __( 'Arr Venue', 'betait-letsreg' ) ),
+                'show_ui'      => true,
+                'show_admin_column' => true,
+                'rewrite'      => array( 'slug' => 'lrarr-venue' ),
+            )
+        );
+        // 5) And similarly for “organizer”
+        register_taxonomy(
+            'lrarr_organizer',
+            'lr-arr',
+            array(
+                'hierarchical' => false,
+                'labels'       => array( 'name' => __( 'Arr Organizer', 'betait-letsreg' ) ),
+                'show_ui'      => true,
+                'show_admin_column' => true,
+                'rewrite'      => array( 'slug' => 'lrarr-organizer' ),
+            )
+        );
+    }
+    
+    
+    
+    
+     /**
      * Legg til et eget toppnivå-menyvalg med tre undermenyer i WordPress admin.
      *
      * @since 1.0.0
@@ -112,24 +246,48 @@ class Betait_Letsreg_Admin {
             'betait-letsreg-main',                      // Slug for hovedsiden
             array( $this, 'display_main_menu_page' ),   // Callback for innholdet
             'dashicons-admin-generic',                  // Ikon
-            66                                          // Menyposisjon
+            20                                          // Menyposisjon
         );
+        // Possibly read user choice
+    $storage_choice = get_option( 'betait_letsreg_local_storage', 'lr-arr' );
 
-        // Underlenke 1: “Innstillinger”
+    // If user picked 'lr-arr' or 'post', we might add a custom "Arrangementer" admin page, etc.
+    if ( $storage_choice === 'lr-arr' ) {
+        // If you want a submenu that links to the custom CPT list table:
         add_submenu_page(
-            'betait-letsreg-main',                      // Slug til hovedmenyen
-            __( 'Innstillinger', 'betait-letsreg' ),    // Sidetittel
-            __( 'Innstillinger', 'betait-letsreg' ),    // Menytittel
+            'betait-letsreg-main',
+            __( 'Våre Arrangementer', 'betait-letsreg' ),
+            __( 'Våre Arrangementer', 'betait-letsreg' ),
             'manage_options',
-            'betait-letsreg-settings',
-            array( $this, 'display_settings_page' )
+            'edit.php?post_type=lr-arr',
+            '' // no callback, it will automatically load the CPT's default list table
         );
+    } elseif ( $storage_choice === 'tribe_events' ) {
+        // The Events Calendar has its own menu. Maybe you skip adding a submenu here.
+        // or link to 'edit.php?post_type=tribe_events'
+        add_submenu_page(
+            'betait-letsreg-main',
+            __( 'TE Arrangementer', 'betait-letsreg' ),
+            __( 'TE Arrangementer', 'betait-letsreg' ),
+            'manage_options',
+            'edit.php?post_type=tribe_events'
+        );
+    } else { 
+        // If user picks native 'post', you might link to the posts list, or skip it
+        add_submenu_page(
+            'betait-letsreg-main',
+            __( 'WP Innlegg', 'betait-letsreg' ),
+            __( 'WP Innlegg', 'betait-letsreg' ),
+            'manage_options',
+            'edit.php?post_type=post'
+        );
+    }
 
         // Underlenke 2: “Arrangementer”
         add_submenu_page(
             'betait-letsreg-main',
-            __( 'Arrangementer', 'betait-letsreg' ),
-            __( 'Arrangementer', 'betait-letsreg' ),
+            __( 'Importer Arrangement', 'betait-letsreg' ),
+            __( 'Importer Arrangementer', 'betait-letsreg' ),
             'manage_options',
             'betait-letsreg-events',
             array( $this, 'display_events_page' )
@@ -143,6 +301,16 @@ class Betait_Letsreg_Admin {
             'manage_options',
             'betait-letsreg-organizer',
             array( $this, 'display_organizer_page' )
+        );
+
+          // Underlenke 1: “Innstillinger”
+          add_submenu_page(
+            'betait-letsreg-main',                      // Slug til hovedmenyen
+            __( 'Innstillinger', 'betait-letsreg' ),    // Sidetittel
+            __( 'Innstillinger', 'betait-letsreg' ),    // Menytittel
+            'manage_options',
+            'betait-letsreg-settings',
+            array( $this, 'display_settings_page' )
         );
     }
 
@@ -281,6 +449,7 @@ class Betait_Letsreg_Admin {
 
 
 
+
   /**
      * ADD FUNCTIONS BELOW THIS AREA.
 	 * -----------------------------------------------------------------------------------------
@@ -382,6 +551,7 @@ class Betait_Letsreg_Admin {
 		$token      = sanitize_textarea_field( $_POST['betait_letsreg_access_token'] ?? '' );
 		$debug      = isset($_POST['betait_letsreg_debug']) ? true : false;
 		$primaryOrg = sanitize_text_field( $_POST['betait_letsreg_primary_org'] ?? '' );
+        
 	
 		// Nye felt: Read Only-modus
 		$read_only  = isset($_POST['betait_letsreg_read_only']) ? true : false;
@@ -452,7 +622,12 @@ class Betait_Letsreg_Admin {
 		// Slett andre spesifikke URL-opsjoner hvis du har dem
 		// delete_option('betait_letsreg_token_url');
 		// delete_option('betait_letsreg_events_url');
-	
+        
+        if ( ! empty( $_POST['betait_letsreg_local_storage'] ) ) {
+            $choice = sanitize_text_field( $_POST['betait_letsreg_local_storage'] );
+            update_option( 'betait_letsreg_local_storage', $choice );
+          }
+
 		// Vis suksessmelding i admin
 		add_action('admin_notices', function() {
 			?>

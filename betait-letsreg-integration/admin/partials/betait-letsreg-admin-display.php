@@ -18,6 +18,17 @@
  * Du kan selv velge om du vil ha logikk for lagring av data her eller i admin-klassen.
  */
 
+// Make sure we can check if a plugin is active
+if ( ! function_exists( 'is_plugin_active' ) ) {
+    require_once ABSPATH . 'wp-admin/includes/plugin.php';
+}
+
+// Is The Events Calendar active?
+$the_events_active = is_plugin_active( 'the-events-calendar/the-events-calendar.php' );
+
+// Retrieve the user's current storage choice, default to "lr-arr"
+$storage_choice = get_option( 'betait_letsreg_local_storage', 'lr-arr' );
+
 // 1) Hent eksisterende verdier fra WP options (plain text, ingen kryptering)
 $username         = get_option('betait_letsreg_username', '');
 $password         = get_option('betait_letsreg_password', '');
@@ -152,49 +163,41 @@ $organizers_list   = get_option('betait_letsreg_organizers_list', []);
                 </tr>
 
                 <tr>
-    <th scope="row"><?php esc_html_e('Velg hvor arrangementer skal lagres', 'betait-letsreg'); ?></th>
+                <th scope="row">
+      <label for="betait_letsreg_local_storage">
+        <?php esc_html_e('Hvor skal arrangementer lagres?', 'betait-letsreg'); ?>
+      </label>
+    </th>
     <td>
+      <select name="betait_letsreg_local_storage" id="betait_letsreg_local_storage">
 
-      <!-- The Events Calendar Option -->
-      <?php if ( $the_events_active ) : ?>
-        <label>
-          <input type="radio" name="betait_letsreg_local_storage" 
-                 value="tribe_events"
-                 <?php checked( $storage_choice, 'tribe_events' ); ?> />
-          <?php esc_html_e('The Events Calendar (aktiv)', 'betait-letsreg'); ?>
-        </label>
-      <?php else : ?>
-        <label style="color:#999;">
-          <input type="radio" name="betait_letsreg_local_storage" 
-                 value="tribe_events" 
-                 disabled="disabled" />
-          <?php esc_html_e('The Events Calendar (ikke aktiv)', 'betait-letsreg'); ?>
-        </label>
-      <?php endif; ?>
-      <br>
+        <!-- 1) The Events Calendar -->
+        <?php if ( $the_events_active ) : ?>
+          <option value="tribe_events" <?php selected( $storage_choice, 'tribe_events' ); ?>>
+            <?php esc_html_e('The Events Calendar (aktiv)', 'betait-letsreg'); ?>
+          </option>
+        <?php else : ?>
+          <!-- Disabled if not active -->
+          <option value="tribe_events" disabled="disabled" 
+            <?php selected( $storage_choice, 'tribe_events' ); ?>>
+            <?php esc_html_e('The Events Calendar (ikke aktiv)', 'betait-letsreg'); ?>
+          </option>
+        <?php endif; ?>
 
-      <!-- Own CPT Option -->
-      <label>
-        <input type="radio" name="betait_letsreg_local_storage" 
-               value="lr-arr"
-               <?php checked( $storage_choice, 'lr-arr' ); ?> />
-        <?php esc_html_e('Egen posttype: "BeTA LetsReg Arrangementer"', 'betait-letsreg'); ?>
-      </label>
-      <br>
+        <!-- 2) Own CPT: "lr-arr" -->
+        <option value="lr-arr" <?php selected( $storage_choice, 'lr-arr' ); ?>>
+          <?php esc_html_e('BeTA LetsReg Arrangementer', 'betait-letsreg'); ?>
+        </option>
 
-      <!-- WP Native Post Option -->
-      <label>
-        <input type="radio" name="betait_letsreg_local_storage" 
-               value="post"
-               <?php checked( $storage_choice, 'post' ); ?> />
-        <?php esc_html_e('WordPress standard innlegg (post)', 'betait-letsreg'); ?>
-      </label>
-      <br>
+        <!-- 3) WP Native Post -->
+        <option value="post" <?php selected( $storage_choice, 'post' ); ?>>
+          <?php esc_html_e('WordPress standard innlegg (post)', 'betait-letsreg'); ?>
+        </option>
 
+      </select>
       <p class="description">
         <?php esc_html_e('Velg hvordan nye arrangementer fra LetsReg skal lagres lokalt.', 'betait-letsreg'); ?>
       </p>
-
     </td>
   </tr>
 
