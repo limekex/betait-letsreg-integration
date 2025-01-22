@@ -16,7 +16,8 @@ class Betait_LetsReg_Ajax {
 
         // Hook AJAX handlers for logged-in users
         add_action( 'wp_ajax_betait_letsreg_fetch_events', array( $this, 'fetch_events_ajax_handler' ) );
-        add_action( 'wp_ajax_betait_letsreg_add_event', array( $this, 'add_event_ajax_handler' ) );
+        //add_action( 'wp_ajax_betait_letsreg_add_event', array( $this, 'add_event_ajax_handler' ) );
+        add_action( 'wp_ajax_betait_letsreg_get_event', array( $this, 'get_event_ajax_handler' ) );
 
         // Log at hooks er lagt til
         $this->log_debug( 'AJAX handlers hooked.' );
@@ -172,6 +173,62 @@ class Betait_LetsReg_Ajax {
             // 'pagination' => array(), // API-et returnerer ikke pagination, så dette kan fjernes eller tilpasses
         ) );
     }
+
+
+
+
+    // In your Betait_Letsreg_Ajax or similar class
+//add_action( 'wp_ajax_betait_letsreg_get_event', array( $this, 'get_event_ajax_handler' ) );
+// If you want for non-logged in also: 
+// add_action( 'wp_ajax_nopriv_betait_letsreg_get_event', array( $this, 'get_event_ajax_handler' ) );
+
+public function get_event_ajax_handler() {
+    // check nonce
+    check_ajax_referer( 'betait_letsreg_nonce', 'nonce' );
+
+    // capability check
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_send_json_error( array( 'message' => 'No permission.' ) );
+    }
+
+    $event_id = isset($_POST['event_id']) ? intval($_POST['event_id']) : 0;
+    if ( ! $event_id ) {
+        wp_send_json_error( array( 'message' => 'Missing event_id' ) );
+    }
+
+    // Build your external call to "GET /events/{eventId}" or something
+    // or integrate with your aggregator logic. Example:
+
+    $access_token = get_option('betait_letsreg_access_token','');
+    $base_url     = get_option('betait_letsreg_base_url','https://integrate.deltager.no');
+    $endpoint_url = trailingslashit( $base_url ) . 'events/' . $event_id;
+
+    $response = wp_remote_get( $endpoint_url, array(
+        'headers' => array(
+            'Authorization' => 'Bearer ' . $access_token,
+            'Accept'        => 'application/json',
+        ),
+    ));
+    if ( is_wp_error($response) ) {
+        wp_send_json_error( array( 'message' => $response->get_error_message() ) );
+    }
+    $status_code = wp_remote_retrieve_response_code($response);
+    if ( 200 !== $status_code ) {
+        wp_send_json_error( array( 'message' => "Status $status_code from upstream." ) );
+    }
+
+    $body = wp_remote_retrieve_body($response);
+    $data = json_decode($body, true);
+    if ( json_last_error() !== JSON_ERROR_NONE ) {
+        wp_send_json_error( array( 'message' => 'JSON parse error' ) );
+    }
+
+    // success
+    // $data should be the event object with fields like name, startDate, etc.
+    wp_send_json_success( $data );
+}
+
+
 
     /**
      * AJAX handler for adding an event to WordPress.

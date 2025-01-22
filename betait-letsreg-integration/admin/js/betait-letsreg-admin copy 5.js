@@ -350,6 +350,49 @@
     loadEvents(currentPage);
   });
 
+  /**
+   * Handle "Add to WordPress" buttons
+   */
+  $(document).on('click', '.add-to-wp', function() {
+    const eventId = $(this).data('event-id');
+    const button = $(this);
+
+    logDebug('Initiating AJAX request to add event ID: ' + eventId);
+
+    $.ajax({
+      url: BetaitLetsReg.ajax_url,
+      type: 'POST',
+      data: {
+        action: 'betait_letsreg_add_event',
+        nonce: BetaitLetsReg.nonce,
+        event_id: eventId,
+      },
+      beforeSend: function() {
+        button.prop('disabled', true);
+        button.html('<span class="dashicons dashicons-plus"></span> Adding...');
+        logDebug('AJAX request sent to add event ID: ' + eventId);
+      },
+      success: function(response) {
+        logDebug('AJAX request to add event successful.', response);
+        if (response.success) {
+          alert(response.data.message);
+          // Optionally show a check mark
+          button.html('<span class="dashicons dashicons-yes"></span>');
+        } else {
+          alert('Error: ' + response.data.message);
+          button.prop('disabled', false);
+          button.html('<span class="dashicons dashicons-plus"></span>');
+          logDebug('AJAX request to add event returned error: ' + response.data.message);
+        }
+      },
+      error: function(xhr, status, error) {
+        alert('An error occurred: ' + error);
+        button.prop('disabled', false);
+        button.html('<span class="dashicons dashicons-plus" title="Add to WP"></span>');
+        logDebug('AJAX request to add event failed:', { xhr: xhr, status: status, error: error });
+      }
+    });
+  });
 
   /**
    * Local text-based searching (client-side)
@@ -540,161 +583,5 @@
 
   // Initially load page 1
   loadEvents(currentPage);
-
-
-
-
-// THE ADD TO WP FUNCTIONALITY
-
-    // 1) Create a reusable function to show a modal
-    function showConfirmModal(eventData, onConfirm) {
-        // eventData is the object we got from the "get_event" endpoint
-
-        // Create or re-use a <div id="letsreg-modal"> container
-        let $modal = $('#letsreg-modal');
-        if ($modal.length < 1) {
-            // If not existing, create it
-            $('body').append('<div id="letsreg-modal" class="letsreg-modal" style="display:none;"></div>');
-            $modal = $('#letsreg-modal');
-        }
-
-        // Build HTML for the modal content
-        let html = `<div class="letsreg-modal-content">
-            <h2>${eventData.name ? eventData.name : 'Unnamed Event'}</h2>
-            <p><strong>Start Date:</strong> ${eventData.startDate || 'N/A'}</p>
-            <p><strong>End Date:</strong> ${eventData.endDate || 'N/A'}</p>
-            <p><strong>Description:</strong> ${eventData.description || ''}</p>
-            <!-- Add more fields as needed -->
-
-            <div class="letsreg-modal-buttons">
-                <button class="button button-primary" id="letsreg-modal-confirm">Bekreft</button>
-                <button class="button" id="letsreg-modal-cancel">Avbryt</button>
-            </div>
-        </div>`;
-
-        $modal.html(html);
-
-        // Show the modal (basic styles or you can do fancier UI)
-        $modal.fadeIn(200);
-
-        // Hook up the confirm/cancel
-        $('#letsreg-modal-confirm').off('click').on('click', function() {
-            $modal.fadeOut(200);
-            onConfirm(); // callback to proceed
-        });
-        $('#letsreg-modal-cancel').off('click').on('click', function() {
-            $modal.fadeOut(200);
-        });
-    }
-
-    // 2) The function to fetch event details
-    function fetchEventDetails(eventId, onSuccess, onError) {
-      $.ajax({
-          url: BetaitLetsReg.ajax_url,
-          method: 'POST',
-          data: {
-              action: 'betait_letsreg_get_event',
-              nonce: BetaitLetsReg.nonce,
-              event_id: eventId
-          },
-          success: function(response) {
-              if (response.success) {
-                  if (onSuccess) onSuccess(response.data);
-              } else {
-                  // Instead of just "if (onError) onError(response.data.message);"
-                  // we also pass null for xhr, plus 'error' strings if we want.
-                  if (onError) onError(response.data.message, null, 'error', response.data.message);
-              }
-          },
-          error: function(xhr, status, error) {
-              // Provide extended info
-              let msg = error ? error : 'Unknown error';
-              if (onError) onError(msg, xhr, status, error);
-          }
-      });
-  }
-  
-
-    // 3) The function to do final "Add to WP" after confirmation
-    function addEventToWP(eventId) {
-        // The code you originally had:
-        $.ajax({
-            url: BetaitLetsReg.ajax_url,
-            type: 'POST',
-            data: {
-                action: 'betait_letsreg_add_event',
-                nonce: BetaitLetsReg.nonce,
-                event_id: eventId,
-            },
-            beforeSend: function() {
-                // Maybe disable the button or show some spinner
-            },
-            success: function(response) {
-                if (response.success) {
-                    alert(response.data.message);
-                    // Optionally update UI to reflect success
-                } else {
-                    alert('Feil: ' + response.data.message);
-                    // re-enable button if needed
-                }
-            },
-            error: function(xhr, status, error) {
-                alert('En feil oppstod: ' + error);
-            }
-        });
-    }
-
-    // 4) Main "click" handler for `.add-to-wp`
-    /*$(document).on('click', '.add-to-wp', function(e) {
-      e.preventDefault();
-      const eventId = $(this).data('event-id');
-  
-      // 1) Fetch the event details
-      fetchEventDetails(eventId, 
-          function(eventData) { // onSuccess
-              // 2) Show modal with data
-              showConfirmModal(eventData, function() {
-                  // On confirm => do final addEventToWP
-                  addEventToWP(eventId);
-              });
-          },
-          function(errorMsg, xhr, status, error) { // onError
-              // Provide more debug info
-              console.log('[BetaitLetsReg DEBUG] fetchEventDetails failed =>', {
-                  errorMsg: errorMsg,
-                  xhrResponse: xhr ? xhr.responseText : 'no xhr',
-                  status: status,
-                  error: error
-              });
-              alert('Could not load event details: ' + errorMsg);
-          }
-      );
-  }); */
-  $(document).on('click', '.add-to-wp', function(e) {
-    e.preventDefault();
-    const eventId = $(this).data('event-id');
-
-    // 1) We first fetch the event details
-    fetchEventDetails(eventId, 
-        function(eventData) { // onSuccess
-            // 2) Show modal with data
-            showConfirmModal(eventData, function() {
-                // On confirm => do final addEventToWP
-                addEventToWP(eventId);
-            });
-        },
-        function(errorMsg, xhr, status, error) { // onError with extra params
-            // Provide more debug info in the console
-            console.log('[BetaitLetsReg DEBUG] fetchEventDetails failed =>', {
-                errorMsg: errorMsg,
-                xhrResponse: xhr ? xhr.responseText : 'no xhr object',
-                status: status,
-                error: error
-            });
-            alert('Could not load event details: ' + errorMsg);
-        }
-    );
-});
-
 
 })(jQuery);

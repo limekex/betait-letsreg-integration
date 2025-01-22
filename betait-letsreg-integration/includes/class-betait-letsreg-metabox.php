@@ -111,7 +111,7 @@
         // Basic Booleans as checkboxes (read-only? we might just show "Yes"/"No")
         echo '<div class="lrarr-metabox-field">';
         echo '<label>' . esc_html__('Arrangementflagg', 'betait-letsreg') . '</label>';
-        echo '<div class="lrarr-boolean-group">';
+        echo '<div class="lrarr-boolean-group lrarr-boolean-group-flags">';
         $this->renderReadonlyCheckbox( esc_html__('Aktiv','betait-letsreg'), $lr_active );
         $this->renderReadonlyCheckbox( esc_html__('Publisert','betait-letsreg'), $lr_published );
         $this->renderReadonlyCheckbox( esc_html__('Søkbar','betait-letsreg'), $lr_searchable );

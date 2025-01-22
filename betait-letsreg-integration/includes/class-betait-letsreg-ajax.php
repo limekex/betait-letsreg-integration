@@ -17,6 +17,7 @@ class Betait_LetsReg_Ajax {
         // Hook AJAX handlers for logged-in users
         add_action( 'wp_ajax_betait_letsreg_fetch_events', array( $this, 'fetch_events_ajax_handler' ) );
         add_action( 'wp_ajax_betait_letsreg_add_event', array( $this, 'add_event_ajax_handler' ) );
+        
 
         // Log at hooks er lagt til
         $this->log_debug( 'AJAX handlers hooked.' );
@@ -225,8 +226,6 @@ class Betait_LetsReg_Ajax {
             // 'pagination' => array(), // API doesn't return pagination; adjust if needed
         ) );
     }
-    
-    
     
 
     public function add_event_ajax_handler() {

@@ -218,6 +218,33 @@ thead.beta-letsreg-headtable .beta-letsreg-table-header {
   border: 1px solid;
 }
 
+/* Add to WP modal */
+.letsreg-modal {
+  position: fixed;
+  z-index: 999999;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none; /* hidden by default */
+}
+
+.letsreg-modal-content {
+  background: #fff;
+  border-radius: 4px;
+  padding: 20px;
+  width: 600px;
+  max-width: 90%;
+  margin: 50px auto;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.letsreg-modal-buttons {
+  margin-top: 20px;
+  text-align: right;
+}
+
+
+
 /* Arrangør CPT Menygruppering */
 #toplevel_page_betait-letsreg-main li a[href="edit.php?post_type=lr-arr"],
 #toplevel_page_betait-letsreg-main li a[href="edit-tags.php?taxonomy=lrarr_cat&post_type=lr-arr"],
@@ -233,12 +260,23 @@ thead.beta-letsreg-headtable .beta-letsreg-table-header {
 
 /* Arrangør CPT Metaboxes */
 
+.lrarr-metabox-wrapper {
+  display: flex;
+  flex-flow: wrap;
+  gap: 10px;
+}
+
 .lrarr-metabox-field-group {
   border: 1px solid #eee;
   padding: 15px;
-  margin-bottom: 15px;
+  width: calc(50% - 40px);
   background: #fafafa;
 }
+
+.lrarr-boolean-group-flags label {
+  display: flow;
+}
+
 .lrarr-metabox-field-group h3 {
   margin-top: 0;
   font-size: 1.1em;
