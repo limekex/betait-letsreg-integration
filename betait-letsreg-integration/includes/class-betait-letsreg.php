@@ -141,6 +141,9 @@ class Betait_Letsreg {
     	$this->cpt_manager->register_hooks();
 		$this->tax_meta = new Betait_Letsreg_Tax_Meta();
 
+			// e.g. in class-betait-letsreg.php or similar:
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-betait-letsreg-metabox.php';
+		$this->metabox = new Betait_Letsreg_Metabox();
 
 		$this->loader = new Betait_Letsreg_Loader();
 

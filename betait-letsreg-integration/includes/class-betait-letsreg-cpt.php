@@ -62,6 +62,7 @@ class Betait_Letsreg_CPT {
             'label'               => __( 'LR Arrangementer', 'betait-letsreg' ),
             'labels'              => $labels,
             'public'              => true,  // or set false if you want them hidden
+            'show_in_menu' => 'betait-letsreg-main', // Slug from add_menu_page
             'has_archive'         => true,
             'hierarchical'        => false,
             'supports'            => array( 'title', 'editor', 'author', 'thumbnail', 'excerpt' ),
