@@ -191,4 +191,8 @@ if ($is_read_only) {
         ?>
     </p>
 </footer>
+
+<div id="letsreg-overlay" class="letsreg-overlay" style="display:none;">
+            <div class="letsreg-spinner"></div>
+          </div>
 </div>

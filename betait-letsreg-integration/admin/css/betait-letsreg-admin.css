@@ -232,10 +232,13 @@ thead.beta-letsreg-headtable .beta-letsreg-table-header {
   background: #fff;
   border-radius: 4px;
   padding: 20px;
-  width: 600px;
-  max-width: 90%;
+  width: calc(80% - 20px);
   margin: 50px auto;
   box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  height: -webkit-fill-available;
+  display: flex ;
+  flex-direction: column;
+  flex-wrap: wrap;
 }
 
 .letsreg-modal-buttons {
@@ -243,6 +246,28 @@ thead.beta-letsreg-headtable .beta-letsreg-table-header {
   text-align: right;
 }
 
+.letsreg-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.letsreg-spinner {
+  width: 50px;
+  height: 50px;
+  border: 6px solid #ccc;
+  border-top: 6px solid #000;
+  border-radius: 50%;
+  animation: letsreg-spin 1s linear infinite;
+}
+@keyframes letsreg-spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 
 
 /* Arrangør CPT Menygruppering */
