@@ -211,15 +211,17 @@ class Betait_LetsReg_Ajax {
 
         // 4) Build the "GET single event" endpoint (e.g. /organizers/xxx/events/yyy)
         $organizer_id = get_option( 'betait_letsreg_primary_org', 0 );
-        if ( ! $organizer_id ) {
-            $this->log_debug( 'Organizer ID not set.' );
-            wp_send_json_error( array( 'message' => __( 'Organizer ID not set.', 'betait-letsreg' ) ) );
+        $event_id = isset($_POST['event_id']) ? intval($_POST['event_id']) : 0;
+        if ( ! $event_id ) {
+            wp_send_json_error( array( 'message' => 'Missing event_id' ) );
         }
-        $this->log_debug( 'Organizer ID: ' . $organizer_id );
-
-        $base_url     = get_option( 'betait_letsreg_base_url', 'https://integrate.deltager.no' );
-        $access_token = get_option( 'betait_letsreg_access_token', '' );
-        $endpoint_url = trailingslashit( $base_url ) . 'organizers/' . $organizer_id . '/events/' . $event_id;
+    
+        // Build your external call to "GET /events/{eventId}" or something
+        // or integrate with your aggregator logic. Example:
+    
+        $access_token = get_option('betait_letsreg_access_token','');
+        $base_url     = get_option('betait_letsreg_base_url','https://integrate.deltager.no');
+        $endpoint_url = trailingslashit( $base_url ) . 'events/' . $event_id;
         $this->log_debug( 'API Endpoint URL for specific event: ' . $endpoint_url );
 
         // 5) Make request
