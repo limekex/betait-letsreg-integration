@@ -217,10 +217,10 @@ class Betait_LetsReg_Ajax {
         }
         $this->log_debug( 'Organizer ID: ' . $organizer_id );
 
-        $base_url     = get_option( 'betait_letsreg_base_url', 'https://integrate.deltager.no' );
-        $access_token = get_option( 'betait_letsreg_access_token', '' );
-        $endpoint_url = trailingslashit( $base_url ) . 'organizers/' . $organizer_id . '/events/' . $event_id;
-        $this->log_debug( 'API Endpoint URL for specific event: ' . $endpoint_url );
+        $access_token = get_option('betait_letsreg_access_token','');
+        $base_url     = get_option('betait_letsreg_base_url','https://integrate.deltager.no');
+        $endpoint_url = trailingslashit( $base_url ) . 'events/' . $event_id;
+        $this->log_debug( 'API Endpoint URL for adding and importing event: ' . $endpoint_url );
 
         // 5) Make request
         $response = wp_remote_get( $endpoint_url, array(
@@ -229,6 +229,24 @@ class Betait_LetsReg_Ajax {
                 'Accept'        => 'application/json',
             ),
         ) );
+
+// Construct cURL command for debug (optional)
+        /*
+        $curl_command = sprintf(
+            "curl -X GET \"%s\" \\\n"
+            . "     -H \"Authorization: Bearer %s\" \\\n"
+            . "     -H \"Accept: application/json\"",
+            $endpoint_url,
+            $access_token
+        );
+        $curl_command .= sprintf(" \\\n     # Organizer ID: %s", $organizer_id);
+    
+        $this->log_debug('Constructed cURL command for debug:' . "\n" . $curl_command);
+        error_log("[Betait_Letsreg_Debug_Curl] " . $curl_command);
+
+        */
+
+
         if ( is_wp_error($response) ) {
             $error_message = $response->get_error_message();
             $this->log_debug( 'wp_remote_get error: ' . $error_message );
@@ -280,7 +298,70 @@ class Betait_LetsReg_Ajax {
         $post_type    = ($storage_choice === 'tribe_events') ? 'tribe_events'
                        : (($storage_choice === 'post')       ? 'post'
                        : 'lr-arr'); // fallback
+        if ( $storage_choice === 'tribe_events' ) {
+    // Assume $event_data is your mapped array from LetsReg
+/* Backup logic for venues and organizers
+if ( $storage_choice === 'tribe_events' ) {
+    // Assume $event_data is your mapped array from LetsReg
 
+    // 1) If you want to create a “Venue” post:
+    if ( ! empty( $event_data['location'] ) ) {
+        $venue_args = array(
+            'Venue'   => $event_data['location']['name']     ?? '',
+            'Address' => $event_data['location']['address1'] ?? '',
+            'City'    => $event_data['location']['city']     ?? '',
+            'Country' => 'Norway', // or parse from $event_data
+            'Phone'   => '',       // etc.
+        );
+        // Create the Venue:
+        $venue_id = Tribe__Events__API::createVenue( $venue_args );
+
+        // Then add to your new event post:
+        update_post_meta( $post_id, '_EventVenueID', $venue_id );
+    }
+
+    // 2) If you want to create an “Organizer” post:
+    if ( ! empty( $event_data['contactPerson'] ) ) {
+        $org_args = array(
+            'Organizer' => $event_data['contactPerson']['name']  ?? '',
+            'Phone'     => $event_data['contactPerson']['mobile'] ?? '',
+            'Email'     => $event_data['contactPerson']['email']  ?? '',
+        );
+        $org_id = Tribe__Events__API::createOrganizer( $org_args );
+
+        update_post_meta( $post_id, '_EventOrganizerID', $org_id );
+    }
+}*/
+
+
+    // 1) If you want to create a “Venue” post:
+    if ( ! empty( $event_data['location'] ) ) {
+        $venue_args = array(
+            'Venue'   => $event_data['location']['name']     ?? '',
+            'Address' => $event_data['location']['address1'] ?? '',
+            'City'    => $event_data['location']['city']     ?? '',
+            'Country' => 'Norway', // or parse from $event_data
+            'Phone'   => '',       // etc.
+        );
+        // Create the Venue:
+        $venue_id = Tribe__Events__API::createVenue( $venue_args );
+
+        // Then add to your new event post:
+        update_post_meta( $post_id, '_EventVenueID', $venue_id );
+    }
+
+    // 2) If you want to create an “Organizer” post:
+    if ( ! empty( $event_data['contactPerson'] ) ) {
+        $org_args = array(
+            'Organizer' => $event_data['contactPerson']['name']  ?? '',
+            'Phone'     => $event_data['contactPerson']['mobile'] ?? '',
+            'Email'     => $event_data['contactPerson']['email']  ?? '',
+        );
+        $org_id = Tribe__Events__API::createOrganizer( $org_args );
+
+        update_post_meta( $post_id, '_EventOrganizerID', $org_id );
+    }
+}
         $post_args = array(
             'post_title'   => $post_title,
             'post_content' => $post_content,
@@ -338,6 +419,7 @@ class Betait_LetsReg_Ajax {
         $access_token = get_option('betait_letsreg_access_token','');
         $base_url     = get_option('betait_letsreg_base_url','https://integrate.deltager.no');
         $endpoint_url = trailingslashit( $base_url ) . 'events/' . $event_id;
+        $this->log_debug( 'API Endpoint URL for verification of event: ' . $endpoint_url );
     
         $response = wp_remote_get( $endpoint_url, array(
             'headers' => array(
@@ -345,6 +427,23 @@ class Betait_LetsReg_Ajax {
                 'Accept'        => 'application/json',
             ),
         ));
+
+// Construct cURL command for debug (optional)
+        /*
+        $curl_command = sprintf(
+            "curl -X GET \"%s\" \\\n"
+            . "     -H \"Authorization: Bearer %s\" \\\n"
+            . "     -H \"Accept: application/json\"",
+            $endpoint_url,
+            $access_token
+        );
+        $curl_command .= sprintf(" \\\n     # Organizer ID: %s", $organizer_id);
+    
+        $this->log_debug('Constructed cURL command for debug:' . "\n" . $curl_command);
+        error_log("[Betait_Letsreg_Debug_Curl] " . $curl_command);
+        */
+        
+
         if ( is_wp_error($response) ) {
             wp_send_json_error( array( 'message' => $response->get_error_message() ) );
         }

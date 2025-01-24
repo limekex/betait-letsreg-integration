@@ -608,6 +608,7 @@ function showConfirmModal(eventData, onConfirm) {
   // Build the modal content
   let html = `
     <div class="letsreg-modal-content">
+      <div class="letsreg-modal-content-wrapper">
       <h2>${eventData.name || 'Unnamed Event'}</h2>
       <p><strong>Start Date:</strong> ${eventData.startDate || 'N/A'}</p>
       <p><strong>End Date:</strong> ${eventData.endDate || 'N/A'}</p>
@@ -616,6 +617,7 @@ function showConfirmModal(eventData, onConfirm) {
       <div class="letsreg-modal-buttons">
           <button class="button button-primary" id="letsreg-modal-confirm">Bekreft</button>
           <button class="button" id="letsreg-modal-cancel">Avbryt</button>
+      </div>
       </div>
     </div>
   `;
