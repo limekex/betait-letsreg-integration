@@ -23,6 +23,7 @@ nbproject
 *.sublime-workspace
 .vscode
 
+
 # Dreamweaver added files
 _notes
 dwsync.xml
@@ -38,3 +39,4 @@ dwsync.xml
 intermediate
 .idea
 cache
+betait-letsreg-integration-bak
