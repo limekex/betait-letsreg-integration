@@ -74,23 +74,48 @@ class Betait_Letsreg_Admin {
      * @since    1.0.0
      */
     public function enqueue_scripts() {
-		wp_enqueue_script(
-			$this->betait_letsreg,
-			plugin_dir_url( __FILE__ ) . 'js/betait-letsreg-admin.js',
-			array( 'jquery' ),
-			$this->version,
-			true
-		);
-	
-		// Legg til lokalisering for skriptet
-		wp_localize_script( $this->betait_letsreg, 'BetaitLetsReg', array(
-			'ajax_url' => admin_url( 'admin-ajax.php' ),
-			'nonce'    => wp_create_nonce( 'betait_letsreg_nonce' ),
-			'add_wp_label'   => __( 'Legg til i WP', 'betait-letsreg' ),
-			'debug'          => get_option( 'betait_letsreg_debug', false ),
-			// Du kan legge til flere data her om nødvendig
-		) );
-	}
+        // Enqueue the main admin script
+        wp_enqueue_script(
+            'betait-letsreg-admin', // Use a consistent and clear handle
+            plugin_dir_url(__FILE__) . 'js/betait-letsreg-admin.js',
+            array('jquery'),
+            $this->version,
+            true
+        );
+    
+        // Load the field mapping from the PHP file
+        $field_mapping = include plugin_dir_path(dirname(__FILE__)) . 'includes/class-betait-letsreg-fieldmapping.php';
+        if ($this->debug_mode_enabled()) {
+            $this->debug_log("Field Mapping loaded from PHP file");
+        }
+    
+        // Get the user's storage choice (default to 'lr-arr')
+        $chosen_storage = get_option('betait_letsreg_local_storage', 'lr-arr');
+        $selected_map = $field_mapping[$chosen_storage] ?? $field_mapping['lr-arr'];
+    
+        if ($this->debug_mode_enabled()) {
+            $this->debug_log("Local Storage Choice: $chosen_storage pushed to JS");
+        }
+    
+        // Localize script with dynamic data
+        wp_localize_script('betait-letsreg-admin', 'BetaitLetsReg', array(
+            'ajax_url'        => admin_url('admin-ajax.php'),
+            'nonce'           => wp_create_nonce('betait_letsreg_nonce'),
+            'add_wp_label'    => __('Legg til i WP', 'betait-letsreg'),
+            'debug'           => get_option('betait_letsreg_debug', false),
+            'LetsRegFieldMap' => [
+                'storageChoice' => $chosen_storage,
+                'mapping'       => $selected_map,
+            ],
+        ));
+    }
+
+    /**
+ * Helper to check if debug mode is enabled.
+ */
+private function debug_mode_enabled() {
+    return (bool) get_option('betait_letsreg_debug', false);
+}
 
     /**
      * ADD MENU AND ADMIN PAGES BELOW THIS AREA.

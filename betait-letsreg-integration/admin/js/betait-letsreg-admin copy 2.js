@@ -769,29 +769,13 @@ function showConfirmModal(eventData, fieldMapping, onConfirm) {
   // Basic fadeIn
   $modal.fadeIn(200);
 
-  /* // Hook up confirm/cancel
+  // Hook up confirm/cancel
   $('#letsreg-modal-confirm').off('click').on('click', function () {
     $modal.fadeOut(200);
     if (onConfirm) onConfirm();
   });
   $('#letsreg-modal-cancel').off('click').on('click', function () {
     $modal.fadeOut(200);
-  }); */
-
-  $('#letsreg-modal-confirm').off('click').on('click', function () {
-    const confirmedFields = {}; // Objekt for bekreftede felter
-  
-    // Loop gjennom alle tabellrader og samle inn feltene
-    $('.letsreg-field-list tbody tr').each(function () {
-      const letsRegField = $(this).find('.field-label').text().trim();
-      const wpField = $(this).find('.field-metakey').text().trim();
-      const value = $(this).find('.field-value').text().trim();
-  
-      confirmedFields[wpField] = value; // Lagre WP-feltet og verdien
-    });
-  
-    $modal.fadeOut(200);
-    if (onConfirm) onConfirm(confirmedFields); // Send feltene tilbake til `onConfirm`
   });
 }
 
@@ -842,7 +826,7 @@ $(document).on('click', '.add-to-wp', function (e) {
 /**************************************
 * 5) The final addEventToWP (already has spinner)
 **************************************/
-function addEventToWP(eventId, confirmedFields) {
+function addEventToWP(eventId) {
   $.ajax({
     url: BetaitLetsReg.ajax_url,
     type: 'POST',
@@ -850,7 +834,6 @@ function addEventToWP(eventId, confirmedFields) {
       action: 'betait_letsreg_add_event',
       nonce: BetaitLetsReg.nonce,
       event_id: eventId,
-      fields: confirmedFields, // Send de bekreftede feltene til serveren
     },
     beforeSend: function () {
       showOverlaySpinner();

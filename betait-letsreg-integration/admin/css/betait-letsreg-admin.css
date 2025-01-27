@@ -223,44 +223,59 @@ thead.beta-letsreg-headtable .beta-letsreg-table-header {
   position: fixed;
   z-index: 999999;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(0,0,0,0.5);
-}
-.letsreg-modal-content-wrapper {
-  padding: 20px;
-  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .letsreg-modal-content {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 700px;
+  position: relative;
+  width: 900px; /* Increased width */
   max-width: 90%;
-  max-height: 80%;
+  max-height: 85%; /* Adjusted height for larger modals */
   background: #fff;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   border-radius: 6px;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
-.letsreg-modal-buttons {
-  margin-top: 20px;
-  text-align: right;
+
+.letsreg-modal-content-wrapper {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: scroll;
 }
 
 /* Scrollable area for the table */
 .letsreg-field-list-wrapper {
   flex: 1;
   overflow-y: auto;
-  margin-bottom: 20px;
+  margin-bottom: 0;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
 }
 
+/* Adjusted table styles */
 .letsreg-field-list {
   width: 100%;
   border-collapse: collapse;
+}
+.letsreg-field-list thead th {
+  position: sticky;
+  top: 0;
+  background: #f9f9f9; /* Matches the header background color */
+  z-index: 10; /* Ensures the header stays on top */
+  border-bottom: 2px solid #ddd; /* Adds a clear separation */
+  padding: 8px;
+}
+
+td.field-arrow {
+  font-weight: bold;
+  font-size: 25px;
 }
 
 .letsreg-field-list th, 
@@ -280,30 +295,60 @@ thead.beta-letsreg-headtable .beta-letsreg-table-header {
   font-weight: bold;
 }
 
-/* Buttons at the bottom */
-.letsreg-modal-buttons {
-  text-align: right;
-  margin-top: auto;
-  padding-top: 10px;
-  border-top: 1px solid #ddd;
-}
-
-/* Minimal styling for the image thumbnail. */
+/* Image thumbnail styling */
 .letsreg-image-field {
   display: flex;
   align-items: center;
   gap: 8px;
 }
+
 .letsreg-image-field img {
   border: 1px solid #ccc;
   background: #f1f1f1;
   margin-right: 8px;
 }
+
 .letsreg-image-url {
   margin: 0;
   font-size: 90%;
   color: #666;
 }
+
+/* Buttons at the bottom */
+.letsreg-modal-buttons {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  text-align: right;
+  display: flex;
+  gap: 10px;
+  padding: 7px 7px;
+  background: #fff;
+}
+
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #0073aa; /* Primary WP button color */
+  color: #fff;
+  font-size: 14px;
+}
+
+button:hover {
+  background-color: #005177;
+}
+
+button.button-secondary {
+  background-color: #ccc;
+  color: #333;
+}
+
+button.button-secondary:hover {
+  background-color: #999;
+}
+
 
 .letsreg-overlay {
   position: fixed;

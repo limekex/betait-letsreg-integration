@@ -608,7 +608,6 @@ function fetchEventDetails(eventId, onSuccess, onError) {
  *    ]
  * @param {Function} onConfirm - Callback if user clicks “Bekreft”
  */
-
 function showConfirmModal(eventData, fieldMapping, onConfirm) {
   let $modal = $('#letsreg-modal');
   if ($modal.length < 1) {
@@ -616,139 +615,57 @@ function showConfirmModal(eventData, fieldMapping, onConfirm) {
     $modal = $('#letsreg-modal');
   }
 
-  // Helper to truncate long text fields
+  // A helper to truncate very long text fields
   function truncateText(str, maxLen = 80) {
     if (!str) return '';
-    return str.length > maxLen ? str.slice(0, maxLen) + '…' : str;
+    return (str.length > maxLen) ? str.slice(0, maxLen) + '…' : str;
   }
-
-  // Helper to resolve nested keys
-  function resolveNestedKey(obj, path) {
-    return path.split('.').reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : null), obj);
-  }
-
-  // Helper to format objects or arrays for display
-  function formatObjectOrArray(value) {
-    if (Array.isArray(value)) {
-      return `
-        <ul class="letsreg-array">
-          ${value.map(item => `<li>${typeof item === 'object' ? JSON.stringify(item, null, 2) : item}</li>`).join('')}
-        </ul>
-      `;
-    } else if (typeof value === 'object' && value !== null) {
-      return `<pre class="letsreg-object">${JSON.stringify(value, null, 2)}</pre>`;
-    }
-    return value;
-  }
-
-  // Helper to check if a field is an image
-  function isImageField(key) {
-    return key.toLowerCase().includes('image') || key.toLowerCase().includes('thumbnail');
-  }
-
-  // Helper to format ISO dates
-  function formatDate(isoString) {
-    if (!isoString) return 'N/A';
-    try {
-      const date = new Date(isoString);
-      return date.toLocaleString('no-NO', { dateStyle: 'medium', timeStyle: 'short' }); // Adjust locale and format as needed
-    } catch (e) {
-      return isoString; // Fallback to raw string if parsing fails
-    }
-  }
-
-  const dateFields = ['startDate', 'endDate', 'lastUpdate', 'registrationStartDate', 'registrationEndDate'];
-
-
 
   // Build rows for each mapped field
   let rowsHtml = '';
+  fieldMapping.forEach(field => {
+    const apiValue = (field.apiKey in eventData) ? eventData[field.apiKey] : '';
+    // If it’s an object or array, you might want to JSON-ify it or handle differently
+    let displayValue = (typeof apiValue === 'string') ? apiValue : JSON.stringify(apiValue);
 
-  // Handle top-level fields like post_title, post_content, and post_status
-  Object.entries(fieldMapping).forEach(([wpField, apiField]) => {
-    if (wpField === 'meta') return; // Skip meta for now
-
-    let apiValue = resolveNestedKey(eventData, apiField) || 'N/A';
-
-    // Format date fields explicitly
-    if (dateFields.includes(apiField)) {
-      apiValue = formatDate(apiValue);
-    }
-
-    // Handle image fields
-    if (isImageField(apiField) && apiValue !== 'N/A') {
-      apiValue = `
+    // If it’s flagged as an image field, show a small thumbnail
+    if (field.isImage && displayValue) {
+      // Display thumbnail plus truncated URL
+      const truncatedUrl = truncateText(displayValue, 40);
+      displayValue = `
         <div class="letsreg-image-field">
-          <img src="${apiValue}" alt="Thumbnail" style="max-height:50px; max-width:50px;" />
-          <p class="letsreg-image-url">${truncateText(apiValue, 40)}</p>
+          <img src="${displayValue}" alt="Thumbnail" style="max-height:50px; max-width:50px;" />
+          <p class="letsreg-image-url">${truncatedUrl}</p>
         </div>
       `;
-    } else if (typeof apiValue === 'object') {
-      // Format objects or arrays
-      apiValue = formatObjectOrArray(apiValue);
     } else {
-      apiValue = truncateText(apiValue);
+      // For normal fields, just truncate long text
+      displayValue = truncateText(displayValue, 100);
     }
 
     rowsHtml += `
       <tr>
-        <td class="field-label"><strong>${apiField}</strong></td>
+        <td class="field-label"><strong>${field.label}</strong></td>
+        <td class="field-value">${displayValue || 'N/A'}</td>
         <td class="field-arrow">→</td>
-        <td class="field-metakey">${wpField}</td>
-        <td class="field-value">${apiValue}</td>
+        <td class="field-metakey">${field.metaKey || '(none)'}</td>
       </tr>
     `;
   });
-
-  // Handle meta fields
-  if (fieldMapping.meta) {
-    Object.entries(fieldMapping.meta).forEach(([metaKey, apiField]) => {
-      let apiValue = resolveNestedKey(eventData, apiField) || 'N/A';
-
-      // Format date fields explicitly
-      if (dateFields.includes(apiField)) {
-        apiValue = formatDate(apiValue);
-      }
-
-      // Handle image fields
-      if (isImageField(apiField) && apiValue !== 'N/A') {
-        apiValue = `
-          <div class="letsreg-image-field">
-            <img src="${apiValue}" alt="Thumbnail" style="max-height:50px; max-width:50px;" />
-            <p class="letsreg-image-url">${truncateText(apiValue, 40)}</p>
-          </div>
-        `;
-      } else if (typeof apiValue === 'object') {
-        // Format objects or arrays
-        apiValue = formatObjectOrArray(apiValue);
-      } else {
-        apiValue = truncateText(apiValue);
-      }
-
-      rowsHtml += `
-        <tr>
-          <td class="field-label"><strong>${apiField}</strong></td>
-          <td class="field-arrow">→</td>
-          <td class="field-metakey">${metaKey}</td>
-          <td class="field-value">${apiValue}</td>
-        </tr>
-      `;
-    });
-  }
 
   // Build the overall modal content
   const html = `
     <div class="letsreg-modal-content">
       <div class="letsreg-modal-content-wrapper">
-        <h2>Arrangementet <u><strong>${truncateText(eventData.name || 'Unnamed Event', 80)}</strong></u> lagres i Wordpress med følgende felt...</h2>
+        <h2>${truncateText(eventData.name || 'Unnamed Event', 80)}</h2>
         <div class="letsreg-field-list-wrapper">
           <table class="letsreg-field-list">
             <thead>
               <tr>
-                <th>LetsReg felt</th>
+                <th>API Field</th>
+                <th>Value</th>
                 <th></th>
-                <th>WP felt</th>
-                <th>Verdi</th>
+                <th>WP Meta Key</th>
               </tr>
             </thead>
             <tbody>
@@ -769,40 +686,20 @@ function showConfirmModal(eventData, fieldMapping, onConfirm) {
   // Basic fadeIn
   $modal.fadeIn(200);
 
-  /* // Hook up confirm/cancel
-  $('#letsreg-modal-confirm').off('click').on('click', function () {
+  // Hook up confirm/cancel
+  $('#letsreg-modal-confirm').off('click').on('click', function() {
     $modal.fadeOut(200);
     if (onConfirm) onConfirm();
   });
-  $('#letsreg-modal-cancel').off('click').on('click', function () {
+  $('#letsreg-modal-cancel').off('click').on('click', function() {
     $modal.fadeOut(200);
-  }); */
-
-  $('#letsreg-modal-confirm').off('click').on('click', function () {
-    const confirmedFields = {}; // Objekt for bekreftede felter
-  
-    // Loop gjennom alle tabellrader og samle inn feltene
-    $('.letsreg-field-list tbody tr').each(function () {
-      const letsRegField = $(this).find('.field-label').text().trim();
-      const wpField = $(this).find('.field-metakey').text().trim();
-      const value = $(this).find('.field-value').text().trim();
-  
-      confirmedFields[wpField] = value; // Lagre WP-feltet og verdien
-    });
-  
-    $modal.fadeOut(200);
-    if (onConfirm) onConfirm(confirmedFields); // Send feltene tilbake til `onConfirm`
   });
-}
-
-
-
-
+} 
 
 /**************************************
 * 4) Put it all together
 **************************************/
-$(document).on('click', '.add-to-wp', function (e) {
+$(document).on('click', '.add-to-wp', function(e) {
   e.preventDefault();
 
   // 1) Show spinner immediately
@@ -812,62 +709,63 @@ $(document).on('click', '.add-to-wp', function (e) {
 
   // 2) Fetch event details
   fetchEventDetails(
-    eventId,
-    function (eventData) {
-      // We have the data now, so hide the spinner
-      hideOverlaySpinner();
+      eventId,
+      function(eventData) {  // onSuccess
+          // We have the data now, so hide the spinner
+          hideOverlaySpinner();
 
-      // 3) Show confirmation modal with the data and field mapping
-      const fieldMapping = BetaitLetsReg.LetsRegFieldMap?.mapping || [];
-      showConfirmModal(eventData, fieldMapping, function () {
-        // On confirm => do final addEventToWP
-        addEventToWP(eventId);
-      });
-    },
-    function (errorMsg, xhr, status, error) {
-      // Also hide spinner on error
-      hideOverlaySpinner();
+          // 3) Show confirmation modal with the data
+          showConfirmModal(eventData, function() {
+              // On confirm => do final addEventToWP
+              addEventToWP(eventId);
+          });
+      },
+      function(errorMsg, xhr, status, error) {  // onError
+          // Also hide spinner on error
+          hideOverlaySpinner();
 
-      console.log('[BetaitLetsReg DEBUG] fetchEventDetails failed =>', {
-        errorMsg: errorMsg,
-        xhrResponse: xhr ? xhr.responseText : 'no xhr object',
-        status: status,
-        error: error,
-      });
-      alert('Could not load event details: ' + errorMsg);
-    }
+          console.log('[BetaitLetsReg DEBUG] fetchEventDetails failed =>', {
+              errorMsg: errorMsg,
+              xhrResponse: xhr ? xhr.responseText : 'no xhr object',
+              status: status,
+              error: error
+          });
+          alert('Could not load event details: ' + errorMsg);
+      }
   );
 });
 
 /**************************************
 * 5) The final addEventToWP (already has spinner)
 **************************************/
-function addEventToWP(eventId, confirmedFields) {
+function addEventToWP(eventId) {
   $.ajax({
-    url: BetaitLetsReg.ajax_url,
-    type: 'POST',
-    data: {
-      action: 'betait_letsreg_add_event',
-      nonce: BetaitLetsReg.nonce,
-      event_id: eventId,
-      fields: confirmedFields, // Send de bekreftede feltene til serveren
-    },
-    beforeSend: function () {
-      showOverlaySpinner();
-    },
-    success: function (response) {
-      hideOverlaySpinner();
-      if (response.success) {
-        alert(response.data.message);
-      } else {
-        alert('Feil: ' + response.data.message);
+      url: BetaitLetsReg.ajax_url,
+      type: 'POST',
+      data: {
+          action: 'betait_letsreg_add_event',
+          nonce: BetaitLetsReg.nonce,
+          event_id: eventId,
+      },
+      beforeSend: function() {
+          showOverlaySpinner();
+      },
+      success: function(response) {
+          hideOverlaySpinner();
+          if (response.success) {
+              alert(response.data.message);
+          } else {
+              alert('Feil: ' + response.data.message);
+          }
+      },
+      error: function(xhr, status, error) {
+          hideOverlaySpinner();
+          alert('En feil oppstod: ' + error);
       }
-    },
-    error: function (xhr, status, error) {
-      hideOverlaySpinner();
-      alert('En feil oppstod: ' + error);
-    },
   });
 }
+
+console.log('Chosen storage is:', LetsRegFieldMap.storageChoice);
+console.log('Mapping object:', LetsRegFieldMap.mapping);
 
 })(jQuery);

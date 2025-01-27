@@ -9,93 +9,56 @@
  * @package    Betait_Letsreg
  * @subpackage Betait_Letsreg/includes
  */
-
-class Betait_Letsreg_Metabox {
+ 
+  class Betait_Letsreg_Metabox {
 
     /**
      * Hook into WordPress to add the metabox.
      */
     public function __construct() {
-        add_action('add_meta_boxes', array($this, 'register_metabox'));
-        add_action('add_meta_boxes', array($this, 'register_debug_metabox'));
-        add_action('admin_enqueue_scripts', array($this, 'enqueue_datepicker_scripts'));
+        add_action( 'add_meta_boxes', array( $this, 'register_metabox' ) );
+        // If you want date/time pickers, enqueue scripts:
+        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_datepicker_scripts' ) );
+        add_action('add_meta_boxes', 'betait_letsreg_add_debug_metabox');
     }
 
     /**
-     * Register the main metabox for our CPT "lr-arr".
+     * Register the metabox for our CPT "lr-arr".
      */
     public function register_metabox() {
         add_meta_box(
             'lr_arr_metabox', // ID
-            __('Arrangement Details', 'betait-letsreg'), // Title
-            array($this, 'render_lr_arr_metabox'), // Callback
+            __( 'Arrangement Details', 'betait-letsreg' ), // Title
+            array( $this, 'render_lr_arr_metabox' ), // Callback
             'lr-arr', // CPT slug
-            'normal', // Context
-            'high' // Priority
+            'normal', // context (normal, side, advanced)
+            'high' // priority
         );
     }
 
     /**
-     * Register the debug metabox for all relevant post types if debug mode is enabled.
+     * Enqueue date/time pickers, minimal CSS, etc.
      */
-    public function register_debug_metabox() {
-        // Check if debug mode is enabled
-        if (!get_option('betait_letsreg_debug', false)) {
-            return;
-        }
-
-        // Dynamically fetch post types or use fallback
-        $post_types = get_option('betait_letsreg_post_types', ['tribe_events', 'lr-arr', 'post']);
-        
-        foreach ($post_types as $post_type) {
-            add_meta_box(
-                'betait_letsreg_debug_metabox',
-                __('LetsReg Debug Info', 'betait-letsreg'),
-                array($this, 'render_debug_metabox'),
-                $post_type,
-                'side',
-                'high'
-            );
-        }
-    }
-
-    /**
-     * Render the debug metabox, showing all metadata for the current post.
-     */
-    public function render_debug_metabox($post) {
-        // Get all post meta for the current post
-        $meta = get_post_meta($post->ID);
-
-        if (empty($meta)) {
-            echo '<p>' . __('No metadata found for this post.', 'betait-letsreg') . '</p>';
-            return;
-        }
-
-        // Display metadata in a readable format
-        echo '<div style="max-height: 300px; overflow-y: auto; font-size: 12px; background: #f9f9f9; padding: 10px; border: 1px solid #ddd;">';
-        echo '<ul>';
-        foreach ($meta as $key => $value) {
-            echo '<li><strong>' . esc_html($key) . '</strong>: ' . esc_html(json_encode($value)) . '</li>';
-        }
-        echo '</ul>';
-        echo '</div>';
-    }
-
-    /**
-     * Enqueue datepicker scripts if needed.
-     */
-    public function enqueue_datepicker_scripts($hook) {
+    public function enqueue_datepicker_scripts( $hook ) {
+        // Only load on post-edit of lr-arr maybe:
         global $post;
-        if (!in_array($hook, ['post.php', 'post-new.php']) || empty($post) || $post->post_type !== 'lr-arr') {
+        if ( 'post.php' !== $hook && 'post-new.php' !== $hook ) {
+            return;
+        }
+        if ( empty($post) || $post->post_type !== 'lr-arr' ) {
             return;
         }
 
-        wp_enqueue_style('jquery-ui-datepicker', '//code.jquery.com/ui/1.13.2/themes/smoothness/jquery-ui.css');
-        wp_enqueue_script('jquery-ui-datepicker');
-    }
+        // jQuery UI CSS + JS
+        wp_enqueue_style( 'jquery-ui-datepicker' , '//code.jquery.com/ui/1.13.2/themes/smoothness/jquery-ui.css');
+        wp_enqueue_script( 'jquery-ui-datepicker' );
+        // If you also want time selection, you might enqueue a timepicker library 
+        // or use fullcalendar/time plugin. For brevity, let's keep to date only.
+
+            }
 
     /**
-     * Render the main metabox HTML for "lr-arr".
+     * Render the Metabox HTML
      */
     public function render_lr_arr_metabox( $post ) {
         // We'll read from meta, e.g.:
@@ -276,10 +239,56 @@ class Betait_Letsreg_Metabox {
     }
 
     /**
-     * Helper function to render read-only checkboxes.
+     * Helper function: render a read-only checkbox (just shows checked/unchecked).
      */
-    private function renderReadonlyCheckbox($label, $value) {
-        $isChecked = in_array(strtolower($value), ['1', 'yes', 'true', 'on']);
-        echo '<label><input type="checkbox" disabled ' . checked($isChecked, true, false) . ' /> ' . esc_html($label) . '</label>';
+    private function renderReadonlyCheckbox( $label, $value ) {
+        // interpret "true"/"1"/"yes" as checked
+        $isChecked = in_array( strtolower($value), array('1','yes','true','on') );
+        ?>
+        <label>
+            <input type="checkbox" disabled <?php checked($isChecked); ?> />
+            <?php echo esc_html($label); ?>
+        </label>
+        <?php
     }
+
+    private function betait_letsreg_add_debug_metabox() {
+        // Check if debug mode is enabled
+        if (!get_option('betait_letsreg_debug', false)) {
+            return;
+        }
+    
+        $post_types = ['tribe_events', 'lr-arr', 'post']; // Define your custom post types here
+    
+        foreach ($post_types as $post_type) {
+            add_meta_box(
+                'betait_letsreg_debug_metabox',
+                __('LetsReg Debug Info', 'betait-letsreg'),
+                'betait_letsreg_render_debug_metabox',
+                $post_type,
+                'side',
+                'high'
+            );
+        }
+    }
+    
+    private function betait_letsreg_render_debug_metabox($post) {
+        // Get all post meta for the current post
+        $meta = get_post_meta($post->ID);
+    
+        if (empty($meta)) {
+            echo '<p>' . __('No metadata found for this post.', 'betait-letsreg') . '</p>';
+            return;
+        }
+    
+        // Display metadata in a readable format
+        echo '<div style="max-height: 300px; overflow-y: auto; font-size: 12px;">';
+        echo '<ul>';
+        foreach ($meta as $key => $value) {
+            echo '<li><strong>' . esc_html($key) . '</strong>: ' . esc_html(json_encode($value)) . '</li>';
+        }
+        echo '</ul>';
+        echo '</div>';
+    }
+    
 }

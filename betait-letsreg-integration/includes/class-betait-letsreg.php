@@ -86,7 +86,6 @@ class Betait_Letsreg {
 			$this->version = '1.0.0';
 		}
 		$this->betait_letsreg = 'betait-letsreg';
-		$this->betait_letsreg_localize_field_mapping();
 		$this->init_ajax();
 		$this->load_dependencies();
 		$this->set_locale();
@@ -154,30 +153,6 @@ class Betait_Letsreg {
 
 	}
 
-	private function betait_letsreg_localize_field_mapping() {
-
-		// 1) Include the big array
-		$field_mapping = include plugin_dir_path(__FILE__) . 'includes/class-betait-letsreg-fieldmapping.php';
-	
-		// 2) Get user’s setting
-		$chosen_storage = get_option( 'betait_letsreg_local_storage', 'lr-arr' );
-	
-		// 3) Grab the relevant sub-array
-		$selected_map = $field_mapping[$chosen_storage] ?? $field_mapping['lr-arr'];
-	
-		// 4) Localize it to your JS handle
-		//    Suppose your main script handle is "betait-letsreg-admin-js"
-		//    and you already enqueued it somewhere...
-		wp_localize_script(
-			'betait-letsreg-admin-js',    // the script handle used in wp_enqueue_script
-			'LetsRegFieldMap',            // the JS object name
-			[
-				'storageChoice' => $chosen_storage,
-				'mapping'       => $selected_map
-			]
-		);
-	}
-	//add_action('admin_enqueue_scripts', 'betait_letsreg_localize_field_mapping');
 	
 	
  /**
