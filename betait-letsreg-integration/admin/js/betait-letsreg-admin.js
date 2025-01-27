@@ -595,44 +595,106 @@ function fetchEventDetails(eventId, onSuccess, onError) {
   });
 }
 
-/**************************************
-* 3) Show Confirm Modal
-**************************************/
-function showConfirmModal(eventData, onConfirm) {
+/**
+ * Show a confirmation modal with a scrollable list of the mapped fields.
+ *
+ * @param {Object} eventData - The data object from the LetsReg API
+ * @param {Array}  fieldMapping - An array of field definitions, e.g.:
+ *    [
+ *      { label: 'Event ID', apiKey: 'id', metaKey: 'lr_id' },
+ *      { label: 'Name',     apiKey: 'name', metaKey: 'post_title' },
+ *      { label: 'Image',    apiKey: 'imageUrl', metaKey: 'lr_imageUrl', isImage: true },
+ *      ...
+ *    ]
+ * @param {Function} onConfirm - Callback if user clicks “Bekreft”
+ */
+function showConfirmModal(eventData, fieldMapping, onConfirm) {
   let $modal = $('#letsreg-modal');
   if ($modal.length < 1) {
-      $('body').append('<div id="letsreg-modal" class="letsreg-modal" style="display:none;"></div>');
-      $modal = $('#letsreg-modal');
+    $('body').append('<div id="letsreg-modal" class="letsreg-modal" style="display:none;"></div>');
+    $modal = $('#letsreg-modal');
   }
 
-  // Build the modal content
-  let html = `
+  // A helper to truncate very long text fields
+  function truncateText(str, maxLen = 80) {
+    if (!str) return '';
+    return (str.length > maxLen) ? str.slice(0, maxLen) + '…' : str;
+  }
+
+  // Build rows for each mapped field
+  let rowsHtml = '';
+  fieldMapping.forEach(field => {
+    const apiValue = (field.apiKey in eventData) ? eventData[field.apiKey] : '';
+    // If it’s an object or array, you might want to JSON-ify it or handle differently
+    let displayValue = (typeof apiValue === 'string') ? apiValue : JSON.stringify(apiValue);
+
+    // If it’s flagged as an image field, show a small thumbnail
+    if (field.isImage && displayValue) {
+      // Display thumbnail plus truncated URL
+      const truncatedUrl = truncateText(displayValue, 40);
+      displayValue = `
+        <div class="letsreg-image-field">
+          <img src="${displayValue}" alt="Thumbnail" style="max-height:50px; max-width:50px;" />
+          <p class="letsreg-image-url">${truncatedUrl}</p>
+        </div>
+      `;
+    } else {
+      // For normal fields, just truncate long text
+      displayValue = truncateText(displayValue, 100);
+    }
+
+    rowsHtml += `
+      <tr>
+        <td class="field-label"><strong>${field.label}</strong></td>
+        <td class="field-value">${displayValue || 'N/A'}</td>
+        <td class="field-arrow">→</td>
+        <td class="field-metakey">${field.metaKey || '(none)'}</td>
+      </tr>
+    `;
+  });
+
+  // Build the overall modal content
+  const html = `
     <div class="letsreg-modal-content">
       <div class="letsreg-modal-content-wrapper">
-      <h2>${eventData.name || 'Unnamed Event'}</h2>
-      <p><strong>Start Date:</strong> ${eventData.startDate || 'N/A'}</p>
-      <p><strong>End Date:</strong> ${eventData.endDate || 'N/A'}</p>
-      <p><strong>Description:</strong> ${eventData.description || ''}</p>
+        <h2>${truncateText(eventData.name || 'Unnamed Event', 80)}</h2>
+        <div class="letsreg-field-list-wrapper">
+          <table class="letsreg-field-list">
+            <thead>
+              <tr>
+                <th>API Field</th>
+                <th>Value</th>
+                <th></th>
+                <th>WP Meta Key</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+        </div>
 
-      <div class="letsreg-modal-buttons">
+        <div class="letsreg-modal-buttons">
           <button class="button button-primary" id="letsreg-modal-confirm">Bekreft</button>
           <button class="button" id="letsreg-modal-cancel">Avbryt</button>
-      </div>
+        </div>
       </div>
     </div>
   `;
   $modal.html(html);
+
+  // Basic fadeIn
   $modal.fadeIn(200);
 
-  // Confirm/cancel
+  // Hook up confirm/cancel
   $('#letsreg-modal-confirm').off('click').on('click', function() {
-      $modal.fadeOut(200);
-      onConfirm(); 
+    $modal.fadeOut(200);
+    if (onConfirm) onConfirm();
   });
   $('#letsreg-modal-cancel').off('click').on('click', function() {
-      $modal.fadeOut(200);
+    $modal.fadeOut(200);
   });
-}
+} 
 
 /**************************************
 * 4) Put it all together
@@ -703,5 +765,7 @@ function addEventToWP(eventId) {
   });
 }
 
+console.log('Chosen storage is:', LetsRegFieldMap.storageChoice);
+console.log('Mapping object:', LetsRegFieldMap.mapping);
 
 })(jQuery);

@@ -222,34 +222,87 @@ thead.beta-letsreg-headtable .beta-letsreg-table-header {
 .letsreg-modal {
   position: fixed;
   z-index: 999999;
-  left: 0; top: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: none; /* hidden by default */
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0,0,0,0.5);
 }
 .letsreg-modal-content-wrapper {
+  padding: 20px;
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
 
 .letsreg-modal-content {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 700px;
+  max-width: 90%;
+  max-height: 80%;
   background: #fff;
-  border-radius: 4px;
-  padding: 20px;
-  width: calc(80% - 20px);
-  margin: 50px auto;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-  height: -webkit-fill-available;
-  display: flex ;
-  flex-direction: column;
-  flex-wrap: wrap;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  border-radius: 6px;
+  overflow: hidden;
 }
-
 .letsreg-modal-buttons {
   margin-top: 20px;
   text-align: right;
+}
+
+/* Scrollable area for the table */
+.letsreg-field-list-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+.letsreg-field-list {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.letsreg-field-list th, 
+.letsreg-field-list td {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.letsreg-field-list th {
+  background: #f9f9f9;
+  text-align: left;
+}
+
+/* Middle arrow column */
+.field-arrow {
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Buttons at the bottom */
+.letsreg-modal-buttons {
+  text-align: right;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid #ddd;
+}
+
+/* Minimal styling for the image thumbnail. */
+.letsreg-image-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.letsreg-image-field img {
+  border: 1px solid #ccc;
+  background: #f1f1f1;
+  margin-right: 8px;
+}
+.letsreg-image-url {
+  margin: 0;
+  font-size: 90%;
+  color: #666;
 }
 
 .letsreg-overlay {
@@ -262,6 +315,7 @@ thead.beta-letsreg-headtable .beta-letsreg-table-header {
   align-items: center;
   justify-content: center;
 }
+
 .letsreg-spinner {
   width: 50px;
   height: 50px;

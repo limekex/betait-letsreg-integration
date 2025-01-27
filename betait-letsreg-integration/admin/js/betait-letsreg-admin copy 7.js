@@ -350,49 +350,6 @@
     loadEvents(currentPage);
   });
 
-  /**
-   * Handle "Add to WordPress" buttons
-   */
-  $(document).on('click', '.add-to-wp', function() {
-    const eventId = $(this).data('event-id');
-    const button = $(this);
-
-    logDebug('Initiating AJAX request to add event ID: ' + eventId);
-
-    $.ajax({
-      url: BetaitLetsReg.ajax_url,
-      type: 'POST',
-      data: {
-        action: 'betait_letsreg_add_event',
-        nonce: BetaitLetsReg.nonce,
-        event_id: eventId,
-      },
-      beforeSend: function() {
-        button.prop('disabled', true);
-        button.html('<span class="dashicons dashicons-plus"></span> Adding...');
-        logDebug('AJAX request sent to add event ID: ' + eventId);
-      },
-      success: function(response) {
-        logDebug('AJAX request to add event successful.', response);
-        if (response.success) {
-          alert(response.data.message);
-          // Optionally show a check mark
-          button.html('<span class="dashicons dashicons-yes"></span>');
-        } else {
-          alert('Error: ' + response.data.message);
-          button.prop('disabled', false);
-          button.html('<span class="dashicons dashicons-plus"></span>');
-          logDebug('AJAX request to add event returned error: ' + response.data.message);
-        }
-      },
-      error: function(xhr, status, error) {
-        alert('An error occurred: ' + error);
-        button.prop('disabled', false);
-        button.html('<span class="dashicons dashicons-plus" title="Add to WP"></span>');
-        logDebug('AJAX request to add event failed:', { xhr: xhr, status: status, error: error });
-      }
-    });
-  });
 
   /**
    * Local text-based searching (client-side)
@@ -583,5 +540,168 @@
 
   // Initially load page 1
   loadEvents(currentPage);
+
+
+
+
+// THE ADD TO WP FUNCTIONALITY
+
+/**************************************
+ * 1) Reuse overlay spinner helpers
+ **************************************/
+function showOverlaySpinner() {
+  // Now fade it in
+  $('#letsreg-overlay').fadeIn(200);
+  logDebug('Spinner shown for showOverlaySpinner');
+}
+
+function hideOverlaySpinner() {
+  $('#letsreg-overlay').fadeOut(200);
+}
+
+/**************************************
+* 2) AJAX for fetching single event
+**************************************/
+function fetchEventDetails(eventId, onSuccess, onError) {
+  $.ajax({
+      url: BetaitLetsReg.ajax_url,
+      method: 'POST',
+      data: {
+          action: 'betait_letsreg_get_event',
+          nonce: BetaitLetsReg.nonce,
+          event_id: eventId
+      },
+      // Show spinner before the request
+      beforeSend: function() {
+          showOverlaySpinner();
+          logDebug('Spinner loaded for fetchEventDetails');
+      },
+      success: function(response) {
+          // Hide spinner once we get a response
+          hideOverlaySpinner();
+
+          if (response.success) {
+              if (onSuccess) onSuccess(response.data);
+          } else {
+              // Pass an error to onError
+              if (onError) onError(response.data.message, null, 'error', response.data.message);
+          }
+      },
+      error: function(xhr, status, error) {
+          hideOverlaySpinner();
+          let msg = error || 'Unknown error';
+          if (onError) onError(msg, xhr, status, error);
+      }
+  });
+}
+
+/**************************************
+* 3) Show Confirm Modal
+**************************************/
+function showConfirmModal(eventData, onConfirm) {
+  let $modal = $('#letsreg-modal');
+  if ($modal.length < 1) {
+      $('body').append('<div id="letsreg-modal" class="letsreg-modal" style="display:none;"></div>');
+      $modal = $('#letsreg-modal');
+  }
+
+  // Build the modal content
+  let html = `
+    <div class="letsreg-modal-content">
+      <div class="letsreg-modal-content-wrapper">
+      <h2>${eventData.name || 'Unnamed Event'}</h2>
+      <p><strong>Start Date:</strong> ${eventData.startDate || 'N/A'}</p>
+      <p><strong>End Date:</strong> ${eventData.endDate || 'N/A'}</p>
+      <p><strong>Description:</strong> ${eventData.description || ''}</p>
+
+      <div class="letsreg-modal-buttons">
+          <button class="button button-primary" id="letsreg-modal-confirm">Bekreft</button>
+          <button class="button" id="letsreg-modal-cancel">Avbryt</button>
+      </div>
+      </div>
+    </div>
+  `;
+  $modal.html(html);
+  $modal.fadeIn(200);
+
+  // Confirm/cancel
+  $('#letsreg-modal-confirm').off('click').on('click', function() {
+      $modal.fadeOut(200);
+      onConfirm(); 
+  });
+  $('#letsreg-modal-cancel').off('click').on('click', function() {
+      $modal.fadeOut(200);
+  });
+}
+
+/**************************************
+* 4) Put it all together
+**************************************/
+$(document).on('click', '.add-to-wp', function(e) {
+  e.preventDefault();
+
+  // 1) Show spinner immediately
+  showOverlaySpinner();
+
+  const eventId = $(this).data('event-id');
+
+  // 2) Fetch event details
+  fetchEventDetails(
+      eventId,
+      function(eventData) {  // onSuccess
+          // We have the data now, so hide the spinner
+          hideOverlaySpinner();
+
+          // 3) Show confirmation modal with the data
+          showConfirmModal(eventData, function() {
+              // On confirm => do final addEventToWP
+              addEventToWP(eventId);
+          });
+      },
+      function(errorMsg, xhr, status, error) {  // onError
+          // Also hide spinner on error
+          hideOverlaySpinner();
+
+          console.log('[BetaitLetsReg DEBUG] fetchEventDetails failed =>', {
+              errorMsg: errorMsg,
+              xhrResponse: xhr ? xhr.responseText : 'no xhr object',
+              status: status,
+              error: error
+          });
+          alert('Could not load event details: ' + errorMsg);
+      }
+  );
+});
+
+/**************************************
+* 5) The final addEventToWP (already has spinner)
+**************************************/
+function addEventToWP(eventId) {
+  $.ajax({
+      url: BetaitLetsReg.ajax_url,
+      type: 'POST',
+      data: {
+          action: 'betait_letsreg_add_event',
+          nonce: BetaitLetsReg.nonce,
+          event_id: eventId,
+      },
+      beforeSend: function() {
+          showOverlaySpinner();
+      },
+      success: function(response) {
+          hideOverlaySpinner();
+          if (response.success) {
+              alert(response.data.message);
+          } else {
+              alert('Feil: ' + response.data.message);
+          }
+      },
+      error: function(xhr, status, error) {
+          hideOverlaySpinner();
+          alert('En feil oppstod: ' + error);
+      }
+  });
+}
+
 
 })(jQuery);
