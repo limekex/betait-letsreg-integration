@@ -44,34 +44,38 @@
          */
         '_EventStartDate' => 'startDate', // event.startDate => _EventStartDate
         '_EventEndDate'   => 'endDate',   // event.endDate   => _EventEndDate
+        '_EventHideFromUpcoming'    => 'searchable',    // event.searchable => _EventHideFromUpcoming
 
         // Optional: If you want to store a fallback venue address (without creating a separate Venue):
         '_VenueAddress' => 'location.address1',
 
         // If you also want to store the entire "location" data in custom meta:
-        'lr_location_name'     => 'location.name',
-        'lr_location_address1' => 'location.address1',
-        'lr_location_address2' => 'location.address2',
-        'lr_location_postCode' => 'location.postCode',
-        'lr_location_city'     => 'location.city',
-        'lr_location_county'   => 'location.county',
-        'lr_location_long'     => 'location.longitude',
-        'lr_location_lat'      => 'location.latitude',
+        '_VenueName'     => 'location.name',
+        '_VenueAddress' => 'location.address1',
+        //'lr_location_address2' => 'location.address2',
+        '_VenueZip' => 'location.postCode',
+        '_VenueCity'     => 'location.city',
+        '_VenueCountry'   => 'location.county',
+        '_VenueLng'     => 'location.longitude',
+        '_VenueLat'      => 'location.latitude',
 
         // Or store "venue" sub-fields if the event explicitly has them
-        'lr_venue_id'   => 'venue.id',
-        'lr_venue_name' => 'venue.name',
-        'lr_venue_address1' => 'venue.address1',
-        'lr_venue_address2' => 'venue.address2',
-        'lr_venue_postCode' => 'venue.postCode',
-        'lr_venue_city' => 'venue.city',
+        //'_venue_id'   => 'venue.id',
+        //'_VenueName' => 'venue.name',
+        //'_VenueAddress' => 'venue.address1',
+        //'lr_venue_address2' => 'venue.address2',
+        //'_VenueZip' => 'venue.postCode',
+        //'_VenueCity' => 'venue.city',
 
         // For an Organizer "object"
         // (We usually create a separate post with Tribe__Events__API::createOrganizer)
         // but you can still store some raw info:
-        'lr_organizer_id'        => 'organizer.id',
-        'lr_organizer_affiliate' => 'organizer.affiliateId',
-        'lr_organizer_name'      => 'organizer.name',
+        '_ExtOrganizer_id'        => 'organizer.id',
+        '_ExtOrganizer_affiliate' => 'organizer.affiliateId',
+        '_OrganizerOrganizer'      => 'organizer.name', //also post title for organizer cpt (tribe_organizer)
+        '_OrganizerOrigin'        => 'organizer.origin',
+        '_OrganizerPhone' => 'organizer.phone', //not avaliable from the API, add manually.
+        '_OrganizerWebsite'      => 'organizer.website', //not avaliable from the API, add manually.
 
         // Example: If you want custom meta for "contactPerson" if it differs from official "organizer"
         'lr_contact_name'   => 'contactPerson.name',
@@ -96,7 +100,7 @@
         'lr_registrationEndDateVisible' => 'registrationEndDateVisible',
 
         // More event info
-        'lr_eventUrl'          => 'eventUrl',
+        '_EventURL'          => 'eventUrl',
         'lr_imageUrl'          => 'imageUrl',
         'lr_imageThumbUrl'     => 'imageThumbnailUrl',
         'lr_ordersTotalSum'    => 'ordersTotalSum',

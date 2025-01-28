@@ -43,64 +43,6 @@ class Betait_LetsReg_Ajax {
         }
     }
 
-    private function import_featured_image($image_url, $post_id) {
-        // Log the image URL
-        $this->log_debug('Attempting to import image from URL: ' . $image_url);
-    
-        // Temporary filename for download
-        $temp_file = download_url($image_url);
-    
-        if (is_wp_error($temp_file)) {
-            $this->log_debug('Error downloading image: ' . $temp_file->get_error_message());
-            return $temp_file;
-        }
-    
-        // Force the file extension and MIME type for the image
-        $file_name = basename($image_url);
-        if (!preg_match('/\.(jpg|jpeg|png|gif|bmp|webp)$/i', $file_name)) {
-            $this->log_debug('File extension missing or invalid; forcing ".jpg".');
-            $file_name .= '.jpg';
-        }
-    
-        // Set up file array
-        $file = [
-            'name'     => $file_name, // File name
-            'type'     => 'image/jpeg', // Force MIME type (adjust as necessary)
-            'tmp_name' => $temp_file, // Temporary file location
-            'error'    => 0, // No errors
-            'size'     => filesize($temp_file), // File size
-        ];
-    
-        // Check file type explicitly
-        $check_file = wp_check_filetype_and_ext($temp_file, $file_name);
-        if (!$check_file['ext'] || !$check_file['type']) {
-            $this->log_debug('Forced file type: image/jpeg');
-            $check_file['ext'] = 'jpg';
-            $check_file['type'] = 'image/jpeg';
-        }
-    
-        // Upload the file to the media library
-        $overrides = [
-            'test_form'   => false, // Skip form file validation
-            'test_upload' => true,  // Perform MIME type checks
-        ];
-    
-        $attachment_id = media_handle_sideload($file, $post_id, null, $overrides);
-    
-        // Clean up temporary file
-        @unlink($temp_file);
-    
-        if (is_wp_error($attachment_id)) {
-            $this->log_debug('Error adding image to media library: ' . $attachment_id->get_error_message());
-            return $attachment_id;
-        }
-    
-        $this->log_debug('Image successfully imported with ID: ' . $attachment_id);
-        return $attachment_id;
-    }
-    
-    
-
     /**
      * AJAX handler for fetching multiple events (betait_letsreg_fetch_events).
      * Typically used in the "Arrangementer" listing, returning a JSON list.
@@ -240,150 +182,220 @@ class Betait_LetsReg_Ajax {
      * AJAX handler for adding (importing) a single event to WP (betait_letsreg_add_event).
      */
     public function add_event_ajax_handler() {
-        $this->log_debug('Add Event AJAX handler initiated.');
-    
-        // 1. Security checks
-        if (!check_ajax_referer('betait_letsreg_nonce', 'nonce', false)) {
-            $this->log_debug('Nonce verification failed.');
-            wp_send_json_error(['message' => __('Ugyldig sikkerhetskode.', 'betait-letsreg')]);
+        $this->log_debug( 'Add Event AJAX handler initiated.' );
+
+        // 1) Security checks
+        if ( ! check_ajax_referer( 'betait_letsreg_nonce', 'nonce', false ) ) {
+            $this->log_debug( 'Nonce verification failed.' );
+            wp_send_json_error( array( 'message' => __( 'Ugyldig sikkerhetskode.', 'betait-letsreg' ) ) );
         }
-    
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => __('Du har ikke tilgang til denne handlingen.', 'betait-letsreg')]);
+        $this->log_debug( 'Nonce verification passed.' );
+
+        if ( ! current_user_can( 'manage_options' ) ) {
+            $this->log_debug( 'User lacks manage_options capability.' );
+            wp_send_json_error( array( 'message' => __( 'Du har ikke tilgang til denne handlingen.', 'betait-letsreg' ) ) );
         }
-    
-        // 2. Get the event_id from POST
+        $this->log_debug( 'User has manage_options capability.' );
+
+        // 2) event_id from POST
+        $event_id = isset( $_POST['event_id'] ) ? intval( $_POST['event_id'] ) : 0;
+        if ( ! $event_id ) {
+            $this->log_debug( 'Ugyldig arrangement ID: ' . $event_id );
+            wp_send_json_error( array( 'message' => __( 'Ugyldig arrangement ID.', 'betait-letsreg' ) ) );
+        }
+        $this->log_debug( 'Received event ID: ' . $event_id );
+
+        // 3) Retrieve the user's chosen storage method (option)
+        $storage_choice = get_option( 'betait_letsreg_local_storage', 'lr-arr' );
+        $this->log_debug( 'Storage method chosen: ' . $storage_choice );
+
+        // 4) Build the "GET single event" endpoint (e.g. /organizers/xxx/events/yyy)
+        $organizer_id = get_option( 'betait_letsreg_primary_org', 0 );
         $event_id = isset($_POST['event_id']) ? intval($_POST['event_id']) : 0;
-        if (!$event_id) {
-            $this->log_debug('Invalid event ID provided.');
-            wp_send_json_error(['message' => __('Ugyldig arrangement ID.', 'betait-letsreg')]);
+        if ( ! $event_id ) {
+            wp_send_json_error( array( 'message' => 'Missing event_id' ) );
         }
-        $this->log_debug('Event ID: ' . $event_id);
     
-        // 3. Retrieve storage choice and field mappings
-        $storage_choice = get_option('betait_letsreg_local_storage', 'lr-arr');
-        $this->log_debug('Storage choice: ' . $storage_choice);
-        $field_mapping = include plugin_dir_path(__FILE__) . 'class-betait-letsreg-fieldmapping.php';
-        $mapping = $field_mapping[$storage_choice] ?? [];
-        $this->log_debug('Field mapping loaded.');
+        // Build your external call to "GET /events/{eventId}" or something
+        // or integrate with your aggregator logic. Example:
     
-        // 4. Fetch event data from API
-        $access_token = get_option('betait_letsreg_access_token', '');
-        $base_url = get_option('betait_letsreg_base_url', 'https://integrate.deltager.no');
-        $endpoint_url = trailingslashit($base_url) . 'events/' . $event_id;
-        $this->log_debug('Fetching event data from: ' . $endpoint_url);
-    
-        $response = wp_remote_get($endpoint_url, [
-            'headers' => [
+        $access_token = get_option('betait_letsreg_access_token','');
+        $base_url     = get_option('betait_letsreg_base_url','https://integrate.deltager.no');
+        $endpoint_url = trailingslashit( $base_url ) . 'events/' . $event_id;
+        $this->log_debug( 'API Endpoint URL for specific event: ' . $endpoint_url );
+
+        // 5) Make request
+        $response = wp_remote_get( $endpoint_url, array(
+            'headers' => array(
                 'Authorization' => 'Bearer ' . $access_token,
-                'Accept' => 'application/json',
-            ],
-        ]);
+                'Accept'        => 'application/json',
+            ),
+        ) );
+
+        // Construct cURL command for debug (optional)
+        /*
+        $curl_command = sprintf(
+            "curl -X GET \"%s\" \\\n"
+            . "     -H \"Authorization: Bearer %s\" \\\n"
+            . "     -H \"Accept: application/json\"",
+            $endpoint_url,
+            $access_token
+        );
+        $curl_command .= sprintf(" \\\n     # Organizer ID: %s", $organizer_id);
     
-        if (is_wp_error($response)) {
+        $this->log_debug('Constructed cURL command for debug:' . "\n" . $curl_command);
+        error_log("[Betait_Letsreg_Debug_Curl] " . $curl_command);
+
+        */
+
+
+        if ( is_wp_error($response) ) {
             $error_message = $response->get_error_message();
-            $this->log_debug('API request error: ' . $error_message);
-            wp_send_json_error(['message' => $error_message]);
+            $this->log_debug( 'wp_remote_get error: ' . $error_message );
+            wp_send_json_error( array( 'message' => $error_message ) );
         }
-    
-        $data = json_decode(wp_remote_retrieve_body($response), true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            $this->log_debug('JSON parse error: ' . json_last_error_msg());
-            wp_send_json_error(['message' => __('Kunne ikke parse JSON-responsen.', 'betait-letsreg')]);
+        $this->log_debug( 'API request for single event successful.' );
+
+        $status_code = wp_remote_retrieve_response_code($response);
+        $this->log_debug( 'API response status code: ' . $status_code );
+        if ( 200 !== $status_code ) {
+            $this->log_debug( 'API request failed with status code ' . $status_code );
+            wp_send_json_error( array( 'message' => sprintf( __( 'API request failed with status code %d.', 'betait-letsreg' ), $status_code ) ) );
         }
-        $this->log_debug('Event data retrieved: ' . print_r($data, true));
-    
-        // 5. Prevent duplicate imports
-        $existing = get_posts([
-            'post_type' => $storage_choice,
-            'meta_key' => 'external_event_id',
-            'meta_value' => $event_id,
+
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+        if ( json_last_error() !== JSON_ERROR_NONE ) {
+            $this->log_debug( 'JSON parse error: ' . json_last_error_msg() );
+            wp_send_json_error( array( 'message' => __( 'Kunne ikke parse JSON-responsen.', 'betait-letsreg' ) ) );
+        }
+        $this->log_debug( 'JSON parsed successfully.' );
+
+        if ( empty($data) || ! is_array($data) ) {
+            $this->log_debug( 'Event data is empty or invalid for ID: ' . $event_id );
+            wp_send_json_error( array( 'message' => __( 'Arrangement ikke funnet.', 'betait-letsreg' ) ) );
+        }
+        $this->log_debug( 'Event data retrieved: ' . print_r($data, true) );
+
+        // 6) Possibly check if already stored (meta "external_event_id" = $event_id)
+        $existing = get_posts( array(
+            'post_type'   => array('tribe_events','lr-arr','post'), // or 'any'
+            'meta_key'    => 'external_event_id',
+            'meta_value'  => $event_id,
             'numberposts' => 1,
-        ]);
-        if ($existing) {
-            $this->log_debug('Event already exists in post type: ' . $storage_choice);
-            wp_send_json_error(['message' => __('Arrangementet er allerede lagret.', 'betait-letsreg')]);
+        ) );
+        if ( $existing ) {
+            $this->log_debug( 'Arrangementet er allerede lagret i WordPress for ID: ' . $event_id );
+            wp_send_json_error( array( 'message' => __( 'Arrangementet er allerede lagret i WordPress.', 'betait-letsreg' ) ) );
         }
-    
-        // 6. Map API data to WP fields
-        $post_args = [
-            'post_title' => sanitize_text_field($data[$mapping['post_title']] ?? 'Untitled'),
-            'post_content' => wp_kses_post($data[$mapping['post_content']] ?? ''),
-            'post_status' => $mapping['post_status'] ?? 'publish',
-            'post_type' => $storage_choice,
-        ];
-        $this->log_debug('Post arguments: ' . print_r($post_args, true));
-    
-        $post_id = wp_insert_post($post_args);
-        if (is_wp_error($post_id)) {
-            $this->log_debug('Post creation error: ' . $post_id->get_error_message());
-            wp_send_json_error(['message' => $post_id->get_error_message()]);
-        }
-        $this->log_debug('Post created with ID: ' . $post_id);
-    
-        // 7. Save meta fields with ISO date conversion
-        foreach ($mapping['meta'] as $meta_key => $api_key) {
-            if (!empty($data[$api_key])) {
-                $value = $data[$api_key];
-    
-                // Convert ISO dates to proper format
-                if (strpos($meta_key, '_EventStartDate') !== false || strpos($meta_key, '_EventEndDate') !== false) {
-                    $value = date('Y-m-d H:i:s', strtotime($value));
-                    $this->log_debug('Converted ISO date for ' . $meta_key . ': ' . $value);
+        $this->log_debug( 'Arrangement er ikke lagret ennå. Fortsetter opprettelse.' );
+
+        // 7) Map data => WP
+        // We'll assume you have a separate function like map_letsreg_event_to_wp:
+        // e.g. $mapped = $this->map_letsreg_event_to_wp($data, $storage_choice)
+        // which returns an array with 'post_args' => [...], 'meta' => [...]
+        // For demonstration, let's do a quick manual approach:
+        $post_title   = sanitize_text_field( $data['name'] ?? 'Untitled' );
+        $post_content = wp_kses_post( $data['description'] ?? '' );
+        $post_type    = ($storage_choice === 'tribe_events') ? 'tribe_events'
+                       : (($storage_choice === 'post')       ? 'post'
+                       : 'lr-arr'); // fallback
+        if ( $storage_choice === 'tribe_events' ) {
+            // Assume $event_data is your mapped array from LetsReg
+            /* Backup logic for venues and organizers
+            if ( $storage_choice === 'tribe_events' ) {
+                // Assume $event_data is your mapped array from LetsReg
+
+                // 1) If you want to create a “Venue” post:
+                if ( ! empty( $event_data['location'] ) ) {
+                    $venue_args = array(
+                        'Venue'   => $event_data['location']['name']     ?? '',
+                        'Address' => $event_data['location']['address1'] ?? '',
+                        'City'    => $event_data['location']['city']     ?? '',
+                        'Country' => 'Norway', // or parse from $event_data
+                        'Phone'   => '',       // etc.
+                    );
+                    // Create the Venue:
+                    $venue_id = Tribe__Events__API::createVenue( $venue_args );
+
+                    // Then add to your new event post:
+                    update_post_meta( $post_id, '_EventVenueID', $venue_id );
                 }
-    
-                update_post_meta($post_id, $meta_key, sanitize_text_field($value));
-            }
-        }
-    
-        // 8. Handle specific cases for The Events Calendar
-        if ($storage_choice === 'tribe_events') {
-            if (!empty($data['location'])) {
-                $venue_args = [
-                    'Venue' => sanitize_text_field($data['location']['name'] ?? ''),
-                    'Address' => sanitize_text_field($data['location']['address1'] ?? ''),
-                    'City' => sanitize_text_field($data['location']['city'] ?? ''),
-                    'Country' => sanitize_text_field($data['location']['county'] ?? ''),
-                ];
-                $venue_id = Tribe__Events__API::createVenue($venue_args);
-                if (!is_wp_error($venue_id)) {
-                    update_post_meta($post_id, '_EventVenueID', $venue_id);
-                    $this->log_debug('Venue created with ID: ' . $venue_id);
+
+                // 2) If you want to create an “Organizer” post:
+                if ( ! empty( $event_data['contactPerson'] ) ) {
+                    $org_args = array(
+                        'Organizer' => $event_data['contactPerson']['name']  ?? '',
+                        'Phone'     => $event_data['contactPerson']['mobile'] ?? '',
+                        'Email'     => $event_data['contactPerson']['email']  ?? '',
+                    );
+                    $org_id = Tribe__Events__API::createOrganizer( $org_args );
+
+                    update_post_meta( $post_id, '_EventOrganizerID', $org_id );
                 }
+            }*/
+
+
+            // 1) If you want to create a “Venue” post:
+            if ( ! empty( $event_data['location'] ) ) {
+                $venue_args = array(
+                    'Venue'   => $event_data['location']['name']     ?? '',
+                    'Address' => $event_data['location']['address1'] ?? '',
+                    'City'    => $event_data['location']['city']     ?? '',
+                    'Country' => 'Norway', // or parse from $event_data
+                    'Phone'   => '',       // etc.
+                );
+                // Create the Venue:
+                $venue_id = Tribe__Events__API::createVenue( $venue_args );
+
+                // Then add to your new event post:
+                update_post_meta( $post_id, '_EventVenueID', $venue_id );
             }
-    
-            if (!empty($data['organizer'])) {
-                $organizer_args = [
-                    'Organizer' => sanitize_text_field($data['organizer']['name'] ?? ''),
-                    'Phone' => sanitize_text_field($data['organizer']['phone'] ?? ''),
-                    'Email' => sanitize_email($data['organizer']['email'] ?? ''),
-                ];
-                $organizer_id = Tribe__Events__API::createOrganizer($organizer_args);
-                if (!is_wp_error($organizer_id)) {
-                    update_post_meta($post_id, '_EventOrganizerID', $organizer_id);
-                    $this->log_debug('Organizer created with ID: ' . $organizer_id);
+
+            // 2) If you want to create an “Organizer” post:
+            if ( ! empty( $event_data['contactPerson'] ) ) {
+                $org_args = array(
+                    'Organizer' => $event_data['contactPerson']['name']  ?? '',
+                    'Phone'     => $event_data['contactPerson']['mobile'] ?? '',
+                    'Email'     => $event_data['contactPerson']['email']  ?? '',
+                );
+                $org_id = Tribe__Events__API::createOrganizer( $org_args );
+
+                update_post_meta( $post_id, '_EventOrganizerID', $org_id );
+               }
+            }
+                $post_args = array(
+                    'post_title'   => $post_title,
+                    'post_content' => $post_content,
+                    'post_status'  => 'publish',
+                    'post_type'    => $post_type,
+                );
+                // Insert post
+                $post_id = wp_insert_post($post_args);
+                if ( is_wp_error($post_id) ) {
+                    $this->log_debug( 'wp_insert_post error: ' . $post_id->get_error_message() );
+                    wp_send_json_error( array( 'message' => $post_id->get_error_message() ) );
                 }
-            }
-        }
-    
-        // 9. Set featured image
-        if (!empty($data['imageUrl'])) {
-            $image_id = $this->import_featured_image($data['imageUrl'], $post_id);
-            if (!is_wp_error($image_id)) {
-                set_post_thumbnail($post_id, $image_id);
-                $this->log_debug('Featured image set with ID: ' . $image_id);
-            } else {
-                $this->log_debug('Error importing featured image: ' . $image_id->get_error_message());
-            }
-        }
-    
-        // 10. Respond with success
-        $this->log_debug('Event import completed successfully.');
-        wp_send_json_success(['message' => __('Arrangementet ble lagt til.', 'betait-letsreg'), 'post_id' => $post_id]);
-    }
-    
-    
-    
+                $this->log_debug( 'Post created with ID: ' . $post_id );
+
+                // 8) Store meta e.g. external_event_id
+                update_post_meta( $post_id, 'external_event_id', $event_id );
+                // You can store more meta. E.g. startDate => 'lr_startDate'
+                if ( ! empty($data['startDate']) ) {
+                    update_post_meta( $post_id, 'lr_startDate', sanitize_text_field($data['startDate']) );
+                }
+                // etc. Or do a full loop with your field mapping array.
+
+                // 9) If tribe_events -> you might create a real venue, organizer, etc.
+
+                $this->log_debug( 'Arrangementet ble opprettet med post_id=' . $post_id );
+
+                // 10) Done
+                wp_send_json_success( array(
+                    'message' => __( 'Arrangementet ble lagt til i WordPress.', 'betait-letsreg' ),
+                    'post_id' => $post_id
+                ) );
+    } */
 
     /**
      * AJAX handler for fetching a single event (betait_letsreg_get_event).

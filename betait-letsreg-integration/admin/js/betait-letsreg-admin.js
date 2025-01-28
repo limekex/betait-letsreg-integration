@@ -773,10 +773,10 @@ function showConfirmModal(eventData, fieldMapping, onConfirm) {
   $('#letsreg-modal-confirm').off('click').on('click', function () {
     $modal.fadeOut(200);
     if (onConfirm) onConfirm();
-  });
+  });*/
   $('#letsreg-modal-cancel').off('click').on('click', function () {
     $modal.fadeOut(200);
-  }); */
+  }); 
 
   $('#letsreg-modal-confirm').off('click').on('click', function () {
     const confirmedFields = {}; // Objekt for bekreftede felter
